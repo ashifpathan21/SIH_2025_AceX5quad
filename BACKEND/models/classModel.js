@@ -7,7 +7,7 @@ const classSchema = new mongoose.Schema(
     students: [{ type: mongoose.Schema.Types.ObjectId, ref: "Student" }],
     school: { type: mongoose.Schema.Types.ObjectId, ref: "School" },
     classTeacher: { type: mongoose.Schema.Types.ObjectId, ref: "Teacher" },
-    teachers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Teacher" }],
+    teachers: [{ teacher:{type: mongoose.Schema.Types.ObjectId, ref: "Teacher"} , subject:{type:String} }],
     topStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: "Student" }],
   },
   { timestamps: true }

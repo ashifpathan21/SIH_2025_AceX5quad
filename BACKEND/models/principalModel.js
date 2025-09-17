@@ -7,6 +7,7 @@ const principalSchema = new mongoose.Schema(
     email:{type:String , required:true},
     password:{type:String } ,
     employeeId: { type: String, unique: true },
+    role:{type:String , default:"principal"} ,
     school: { type: mongoose.Schema.Types.ObjectId, ref: "School" },
   },
   { timestamps: true }

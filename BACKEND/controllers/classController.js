@@ -35,7 +35,9 @@ export const updateClassTopStudents = async (req, res) => {
 // ✅ Create Class (only principal)
 export const createClass = async (req, res) => {
   try {
-    const { name, roomNo, schoolId } = req.body;
+    const { name, roomNo, teachers = [], classTeacher } = req.body;
+    const schoolId = req.user.school;
+
     if (!name || !schoolId) {
       return res.status(400).json({ message: "Name and schoolId required" });
     }
@@ -43,18 +45,40 @@ export const createClass = async (req, res) => {
     const school = await School.findById(schoolId);
     if (!school) return res.status(404).json({ message: "School not found" });
 
-    // Create new class with school ref
-    const newClass = await Class.create({ name, roomNo, school: schoolId });
+    // ✅ Create new class with school ref
+    const newClass = await Class.create({
+      name,
+      roomNo,
+      school: schoolId,
+      teachers,
+      classTeacher,
+    });
 
-    // Push into school.classes
+    // ✅ Bind teachers both sides
+    for (const t of teachers) {
+      await Teacher.findByIdAndUpdate(t.teacher, {
+        $push: { assignedClasses: { class: newClass._id, subject: t.subject } },
+      });
+    }
+
+    // ✅ Bind classTeacher (reverse mapping)
+    if (classTeacher) {
+      await Teacher.findByIdAndUpdate(classTeacher, {
+        classTeacher: newClass._id,
+      });
+    }
+
+    // ✅ Push into school.classes
     school.classes.push(newClass._id);
     await school.save();
 
     res.status(201).json(newClass);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // ✅ Get all Classes
 export const getClasses = async (req, res) => {
@@ -68,22 +92,39 @@ export const getClasses = async (req, res) => {
   }
 };
 
-// ✅ Update Class (principal or teacher)
+// ✅ Update Class
 export const updateClass = async (req, res) => {
   try {
+    const { teachers = [], classTeacher } = req.body;
+
     const cls = await Class.findById(req.params.id);
     if (!cls) return res.status(404).json({ message: "Class not found" });
 
+    // ✅ Update class fields
     const updated = await Class.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
-    }).populate("students topStudents classTeacher teachers");
+    }).populate("students topStudents classTeacher teachers.teacher");
+
+    // ✅ Bind teachers both sides
+    for (const t of teachers) {
+      await Teacher.findByIdAndUpdate(t.teacher, {
+        $addToSet: { assignedClasses: { class: updated._id, subject: t.subject } },
+      });
+    }
+
+    // ✅ Bind classTeacher reverse mapping
+    if (classTeacher) {
+      await Teacher.findByIdAndUpdate(classTeacher, {
+        classTeacher: updated._id,
+      });
+    }
 
     res.json(updated);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: error.message });
   }
 };
-
 // ✅ Delete Class (only principal)
 export const deleteClass = async (req, res) => {
   try {
@@ -96,9 +137,25 @@ export const deleteClass = async (req, res) => {
       { $pull: { classes: cls._id } }
     );
 
+    // 🔹 Remove class from all teachers' assignedClasses[]
+    await Teacher.updateMany(
+      { "assignedClasses.class": cls._id },
+      { $pull: { assignedClasses: { class: cls._id } } }
+    );
+
+    // 🔹 Reset classTeacher field for any teacher linked to this class
+    await Teacher.updateMany(
+      { classTeacher: cls._id },
+      { $unset: { classTeacher: "" } }
+    );
+
+    // 🔹 Finally delete class
     await Class.findByIdAndDelete(req.params.id);
-    res.json({ message: "Class deleted and removed from school" });
+
+    res.json({ message: "Class deleted and references cleaned" });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: error.message });
   }
 };
+

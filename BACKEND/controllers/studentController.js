@@ -14,7 +14,7 @@ const sanitizeStudent = (student) => {
 // ✅ Create Student (only principal)
 export const createStudent = async (req, res) => {
   try {
-    const { name, rollNumber, password, image, RFID, classId, parentsContact } =
+    const { name, rollNumber, password, image, RFID, classId, parentsContact , schoolId } =
       req.body;
 
     if (!name || !rollNumber || !password || !classId) {
@@ -36,7 +36,7 @@ export const createStudent = async (req, res) => {
       RFID,
       parentsContact,
       class: classId,
-      school: req.user.school, // from principal’s token
+      school: schoolId, // from principal’s token
     });
 
     // add student to class
@@ -59,9 +59,12 @@ export const getStudents = async (req, res) => {
     let students;
 
     if (req.user.role === "principal") {
+      console.log("principal extracting ")
+      console.log(req.user.school)
       students = await Student.find({ school: req.user.school })
         .populate("class", "name roomNo")
         .populate("school", "name");
+           console.log(students.length);
     } else if (req.user.role === "teacher") {
       const teacher = await Teacher.findById(req.user.id).populate(
         "assignedClasses.class"

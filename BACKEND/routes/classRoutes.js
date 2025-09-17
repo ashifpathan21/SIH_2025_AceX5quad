@@ -19,7 +19,7 @@ const router = express.Router();
 router.post("/create", authMiddleware, isPrincipal, createClass);
 
 // ✅ Anyone logged in (principal/teacher/student) can view classes
-router.get("/get", authMiddleware, getClasses);
+router.get("/getAll", authMiddleware, getClasses);
 
 // ✅ Principal or Teacher can update class
 router.put("/update/:id", authMiddleware, (req, res, next) => {

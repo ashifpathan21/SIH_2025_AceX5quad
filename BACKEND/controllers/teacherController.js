@@ -20,7 +20,7 @@ export const createTeacher = async (req, res) => {
       password,
       image,
       classTeacher,
-      assignedClasses,
+      assignedClasses=[],
       school,
     } = req.body;
 
