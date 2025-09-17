@@ -1,0 +1,36 @@
+import express from "express";
+import { teacherLogin } from "../controllers/authController.js";
+
+import {
+  createTeacher,
+  getTeachers,
+  getTeacher,
+  updateTeacher,
+  deleteTeacher,
+} from "../controllers/teacherController.js";
+
+import {
+  authMiddleware,
+  isPrincipal,
+  isTeacher,
+} from "../middlewares/authMiddleware.js";
+
+const router = express.Router();
+
+router.post("/login", teacherLogin);
+// ✅ Create teacher (only principal)
+router.post("/create", authMiddleware, isPrincipal, createTeacher);
+
+// ✅ Get all teachers (principal only for management)
+router.get("/getAll", authMiddleware, isPrincipal, getTeachers);
+
+// ✅ Get one teacher by ID (principal or teacher self)
+router.get("/get/:id", authMiddleware, getTeacher);
+
+// ✅ Update teacher (principal or teacher self)
+router.put("/update/:id", authMiddleware, updateTeacher);
+
+// ✅ Delete teacher (only principal)
+router.delete("/delete/:id", authMiddleware, isPrincipal, deleteTeacher);
+
+export default router;
