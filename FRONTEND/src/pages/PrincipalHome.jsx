@@ -53,9 +53,16 @@ const PrincipalHome = () => {
 
   // Handle quick actions
   const handleQuickAction = (actionId) => {
-    if (actionId == "manage-students") {
+    if (actionId === "manage-students") {
       navigate("/principal/students");
+    } else if (actionId === "create-class") {
+      navigate("/principal/classes");
+    } else if (actionId === "assign-teacher") {
+      navigate("/principal/teachers");
     }
+     else if (actionId === "view-attendance") {
+       navigate("/principal/attendance");
+     }
     console.log("Quick action clicked:", actionId);
   };
 
@@ -109,7 +116,7 @@ const PrincipalHome = () => {
         user={{ name: profile.name }}
         onLogout={() => {
           localStorage.removeItem("principalToken");
-          navigate('/')
+          navigate("/");
         }}
       />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

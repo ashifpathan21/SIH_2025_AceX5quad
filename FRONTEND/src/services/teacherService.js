@@ -12,20 +12,22 @@ import {
 export function createTeacher(data, token) {
   return async (dispatch) => {
     try {
+      console.log(data) ;
+
       dispatch(setLoading(true));
       const res = await apiConnector("POST", teacherEndpoints.CREATE, data, {
         Authorization: `Bearer ${token}`,
       });
+      console.log(res) 
+
       toast.success("Teacher created successfully");
 
       // Refresh after creating
       dispatch(getAllTeachers(token));
-
+          
       return res.data;
     } catch (error) {
-      dispatch(
-        setError(error.response?.data?.message || "Failed to create teacher")
-      );
+      console.log(error)
       toast.error("Failed to create teacher");
       return null;
     } finally {
@@ -107,17 +109,19 @@ export function getTeacherById(id, token) {
 export function updateTeacher(id, data, token) {
   return async (dispatch) => {
     try {
+      console.log(data)
       dispatch(setLoading(true));
       const res = await apiConnector("PUT", teacherEndpoints.UPDATE(id), data, {
         Authorization: `Bearer ${token}`,
       });
       toast.success("Teacher updated successfully");
-
+       console.log(res)
       // Refresh after update
       dispatch(getAllTeachers(token));
 
       return res.data;
     } catch (error) {
+      console.log(error)
       dispatch(
         setError(error.response?.data?.message || "Failed to update teacher")
       );

@@ -42,6 +42,7 @@ export function getAttendanceByClass(classId, token) {
           Authorization: `Bearer ${token}`,
         }
       );
+      console.log(res)
       dispatch(setAttendance(res.data.attendance || []));
       return res.data.attendance;
     } catch (error) {
@@ -61,12 +62,13 @@ export function getAttendanceByStudent(studentId, token) {
     try {
       const res = await apiConnector(
         "GET",
-        attendanceEndpoints.GET_BY_STUDENT(studentId),
+        attendanceEndpoints.GET_BY_STUDENT,
         null,
         {
           Authorization: `Bearer ${token}`,
         }
       );
+      console.log(res)
       dispatch(setAttendance(res.data.attendance || []));
       return res.data.attendance;
     } catch (error) {

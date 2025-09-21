@@ -92,32 +92,46 @@ export const markAttendance = async (req, res) => {
   }
 };
 
-// ✅ Get Attendance (role-based)
+// ✅ Get Attendance by ClassId (principal / teacher only)
 export const getAttendance = async (req, res) => {
   try {
-    let filter = {};
+    const { id } = req.params; // classId from URL
+    let filter = { class: id };
 
+    // Role-based restrictions
     if (req.user.role === "teacher") {
-      filter.class = req.user.classTeacher;
+      if (req.user.classTeacher.toString() !== id) {
+        return res.status(403).json({ message: "You are not the teacher of this class" });
+      }
     } else if (req.user.role === "principal") {
       const school = await School.findById(req.user.school).populate("classes");
       if (!school) return res.status(404).json({ message: "School not found" });
-      filter.class = { $in: school.classes.map((c) => c._id) };
-    } else if (req.user.role === "student") {
-      filter.student = req.user.id;
+
+      const validClassIds = school.classes.map((c) => c._id.toString());
+      if (!validClassIds.includes(id)) {
+        return res.status(403).json({ message: "This class does not belong to your school" });
+      }
     } else {
-      return res.status(403).json({ message: "Unauthorized role" });
+      return res.status(403).json({ message: "Only teacher/principal can fetch class attendance" });
     }
 
-    const data = await Attendance.find(filter).populate(
-      "student class markedBy"
-    );
-    res.json(data);
+    // Query attendance
+    const data = await Attendance.find(filter)
+      .populate("student", "name email image")
+      .populate("class", "name roomNo")
+      .populate("markedBy", "name email");
+
+    res.json({
+      success: true,
+      attendance: data,
+    });
   } catch (error) {
-    console.error("❌ Error fetchiang attendance:", error);
-    res
-      .status(500)
-      .json({ message: "Error fetching attendance", error: error.message });
+    console.error("❌ Error fetching class attendance:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching class attendance",
+      error: error.message,
+    });
   }
 };
 

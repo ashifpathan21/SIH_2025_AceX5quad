@@ -24,7 +24,7 @@ const ClassModal = ({
         classTeacher: initialData.classTeacher?._id || "",
         teachers:
           initialData.teachers?.map((t) => ({
-            teacher: t._id,
+            teacher: t.teacher?._id,
             subject: t.subject || "",
           })) || [],
       });

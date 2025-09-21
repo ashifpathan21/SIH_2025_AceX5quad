@@ -12,6 +12,7 @@ import {
   isPrincipal,
   isTeacher,
 } from "../middlewares/authMiddleware.js";
+import { upload } from "../middlewares/multer.js";
 
 const router = express.Router();
 
@@ -22,6 +23,7 @@ router.post("/login", studentLogin);
 router.post(
   "/create",
   authMiddleware,
+  upload.single("image"),
   (req, res, next) => {
     if (req.user.role === "principal" || req.user.role === "teacher") {
       next();
@@ -33,6 +35,14 @@ router.post(
   },
   createStudent
 );
+// 🔹 Update student
+//    (we’ll handle role-specific update logic in controller)
+router.put(
+  "/update/:id",
+  authMiddleware,
+  upload.single("image"),
+  updateStudent
+);
 
 // 🔹 Get all students
 //    - Principal → by school
@@ -42,9 +52,6 @@ router.get("/getAll", authMiddleware, getStudents);
 // 🔹 Get one student by ID
 router.get("/get/:id", authMiddleware, getStudent);
 
-// 🔹 Update student
-//    (we’ll handle role-specific update logic in controller)
-router.put("/update/:id", authMiddleware, updateStudent);
 
 // 🔹 Delete student (only teacher or principal allowed)
 router.delete(

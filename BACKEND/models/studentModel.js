@@ -9,6 +9,7 @@ const studentSchema = new mongoose.Schema(
     school:{type:mongoose.Schema.Types.ObjectId , ref:"School"},
     RFID: { type: String, unique: true },
     image: { type: String }, // for face recognition 
+    imageId: { type: String }, // for face recognition 
     parentsContact: {
       fatherName: { type: String },
       motherName: { type: String },

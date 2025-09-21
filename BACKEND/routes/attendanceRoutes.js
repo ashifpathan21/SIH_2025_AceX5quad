@@ -17,7 +17,8 @@ const router = express.Router();
 router.post("/mark", authMiddleware, isTeacher, markAttendance);
 
 // ✅ Get attendance (role based: teacher, principal, student)
-router.get("/get", authMiddleware, getAttendance);
+router.get("/class/:id", authMiddleware, getAttendance);
+router.get("/student/:id", authMiddleware, getAttendance);
 
 // ✅ Update class top students (teacher only)
 router.post(

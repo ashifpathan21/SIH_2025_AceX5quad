@@ -1,5 +1,6 @@
 import Class from "../models/classModel.js";
 import Student from "../models/studentModel.js";
+import Teacher from "../models/teacherModel.js";
 import School from "../models/schoolModel.js";
 
 // ✅ Get top 5 students per class (based on attendance %)
@@ -51,7 +52,7 @@ export const createClass = async (req, res) => {
       roomNo,
       school: schoolId,
       teachers,
-      classTeacher,
+      classTeacher:classTeacher||null,
     });
 
     // ✅ Bind teachers both sides
@@ -83,8 +84,8 @@ export const createClass = async (req, res) => {
 // ✅ Get all Classes
 export const getClasses = async (req, res) => {
   try {
-    const data = await Class.find().populate(
-      "students topStudents classTeacher teachers"
+    const data = await Class.find().populate({
+      path:"students topStudents classTeacher teachers.teacher" }
     );
     res.json(data);
   } catch (error) {

@@ -1,7 +1,8 @@
 // src/pages/Classes.jsx
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Plus, Pencil, Trash2, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Pencil, House , RefreshCw , Trash2, User } from "lucide-react";
 import ClassModal from "../components/ClassModal.jsx";
 import {
   getAllClasses,
@@ -12,6 +13,7 @@ import {
 import { getAllTeachers } from "../services/teacherService.js";
 
 const Classes = () => {
+  const navigate = useNavigate()
   const dispatch = useDispatch();
   const { classes, loading } = useSelector((state) => state.classes);
   const { teachers } = useSelector((state) => state.teachers);
@@ -44,21 +46,38 @@ const Classes = () => {
       dispatch(deleteClass(id, token));
     }
   };
-
+  console.log(classes)
   return (
     <div className="p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Classes</h1>
-        <button
-          onClick={() => {
-            setEditData(null);
-            setIsOpen(true);
-          }}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-        >
-          <Plus className="w-5 h-5" /> Add Class
-        </button>
+
+        <div className=" flex items-center gap-6 p-3">
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          >
+            <House className="w-4 h-4" />
+            Home
+          </button>
+          <button
+            onClick={() => {
+              setEditData(null);
+              setIsOpen(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          >
+            <Plus className="w-5 h-5" /> Add Class
+          </button>
+          <button
+            onClick={() => dispatch(getAllClasses(token))}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Class List */}
@@ -138,16 +157,16 @@ const Classes = () => {
                             <User className="w-8 h-8 text-gray-400" />
                           )}
                           <div>
-                            <p className="font-medium">{t.name}</p>
+                            <p className="font-medium">{t?.teacher?.name}</p>
                             {/* Find subject assigned for this class */}
                             <p className="text-sm text-gray-500">
-                              {t.assignedClasses?.find(
-                                (ac) => ac.class === cls._id
-                              )?.subject || "No subject"}
+                              {t?.subject || "No subject"}
                             </p>
                           </div>
                         </div>
-                        <p className="text-xs text-gray-500">{t.email}</p>
+                        <p className="text-xs text-gray-500">
+                          {t?.teacher?.email}
+                        </p>
                       </div>
                     ))}
                   </div>

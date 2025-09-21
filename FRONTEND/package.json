@@ -12,7 +12,9 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.9.0",
     "@tailwindcss/vite": "^4.1.13",
+    "cloudinary": "^2.7.0",
     "framer-motion": "^12.23.13",
+    "imagekit-javascript": "^4.0.1",
     "lucide-react": "^0.544.0",
     "motion": "^12.23.13",
     "react": "^19.1.1",
