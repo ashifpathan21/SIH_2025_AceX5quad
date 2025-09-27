@@ -31,6 +31,7 @@ app.use(
 app.use(express.json());
 // Middleware: log every request
 app.use((req, res, next) => {
+  console.log(req , req?.url);
   console.log(`👉 [${req.method}] ${req.originalUrl}`);
   next();
 });
@@ -50,4 +51,5 @@ app.get("/", (req, res) => {
 
 // Start server
 app.listen(PORT, () => console.log(`✅ Server is running on port: ${PORT}`));
+
 
