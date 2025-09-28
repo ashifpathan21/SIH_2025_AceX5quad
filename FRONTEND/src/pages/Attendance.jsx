@@ -1,10 +1,10 @@
-// src/pages/Attendance.jsx
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { RefreshCw, House, User } from "lucide-react";
 import { getAllClasses } from "../services/classService";
 import { getAttendanceByClass } from "../services/attendanceService";
+import { motion } from "framer-motion";
 
 const Attendance = () => {
   const navigate = useNavigate();
@@ -13,68 +13,68 @@ const Attendance = () => {
   const { attendance, loading } = useSelector((state) => state.attendance);
 
   const token = localStorage.getItem("principalToken");
-  const [selectedClass, setSelectedClass] = useState(null);
+  const [activeClass, setActiveClass] = useState(null);
 
   useEffect(() => {
     async function fetchData() {
       await dispatch(getAllClasses(token));
+      if (classes.length > 0) setActiveClass(classes[0]._id); // default first class
     }
     fetchData();
-  }, [dispatch, token]);
+  }, [dispatch, token, classes.length]);
 
-  const handleSelectClass = async (classId) => {
-    setSelectedClass(classId);
-    await dispatch(getAttendanceByClass(classId, token));
-  };
+  useEffect(() => {
+    if (activeClass) {
+      dispatch(getAttendanceByClass(activeClass, token));
+    }
+  }, [activeClass, dispatch, token]);
 
   return (
-    <div className="p-6">
+    <div className="p-6 min-h-screen">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Class Attendance</h1>
         <div className="flex items-center gap-6 p-3">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/principal/home")}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
           >
-            <House className="w-4 h-4" />
-            Home
+            <House className="w-4 h-4" /> Home
           </button>
           <button
-            onClick={() => {
-              if (selectedClass) {
-                dispatch(getAttendanceByClass(selectedClass, token));
-              }
-            }}
+            onClick={() =>
+              activeClass && dispatch(getAttendanceByClass(activeClass, token))
+            }
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
           >
-            <RefreshCw className="w-4 h-4" />
-            Refresh
+            <RefreshCw className="w-4 h-4" /> Refresh
           </button>
         </div>
       </div>
 
-      {/* Class Selector */}
-      <div className="mb-6">
-        <label className="block mb-2 text-sm font-medium">Select Class</label>
-        <select
-          onChange={(e) => handleSelectClass(e.target.value)}
-          value={selectedClass || ""}
-          className="border rounded-lg px-4 py-2 w-full"
-        >
-          <option value="">-- Choose a Class --</option>
-          {classes.map((cls) => (
-            <option key={cls._id} value={cls._id}>
-              {cls.name} (Room {cls.roomNo})
-            </option>
-          ))}
-        </select>
+      {/* Class Tabs */}
+      <div className="flex gap-4 border-b border-gray-300 mb-6 overflow-x-auto">
+        {classes?.map((cls) => (
+          <button
+            key={cls._id}
+            onClick={() => setActiveClass(cls._id)}
+            className={`px-4 py-2 rounded-t-lg font-medium transition whitespace-nowrap ${
+              activeClass === cls._id
+                ? "bg-gray-800 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            {cls.name} (Room {cls.roomNo})
+          </button>
+        ))}
       </div>
 
       {/* Attendance List */}
       {loading ? (
-        <p>Loading attendance...</p>
-      ) : !selectedClass ? (
+        <div className="flex justify-center py-10">
+          <RefreshCw className="w-8 h-8 animate-spin text-indigo-600" />
+        </div>
+      ) : !activeClass ? (
         <p className="text-gray-500">
           Please select a class to view attendance.
         </p>
@@ -87,8 +87,12 @@ const Attendance = () => {
           </h2>
           <div className="grid gap-3">
             {attendance?.map((record, idx) => (
-              <div
+              <motion.div
                 key={idx}
+                layout
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
                 className="flex items-center justify-between bg-gray-50 p-3 rounded-lg"
               >
                 <div className="flex items-center gap-3">
@@ -108,7 +112,7 @@ const Attendance = () => {
                     </p>
                   </div>
                 </div>
-                <div>
+                <div className="text-right">
                   <p
                     className={`px-3 py-1 rounded-full text-xs font-semibold ${
                       record.status === "Present"
@@ -118,11 +122,11 @@ const Attendance = () => {
                   >
                     {record.status}
                   </p>
-                  <p className="text-xs text-gray-400 text-right">
+                  <p className="text-xs text-gray-400">
                     {new Date(record.date).toLocaleDateString()}
                   </p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

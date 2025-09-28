@@ -2,7 +2,7 @@ import Attendance from "../models/attendanceModel.js";
 import Student from "../models/studentModel.js";
 import Class from "../models/classModel.js";
 import School from "../models/schoolModel.js";
-import {sendSMS} from '../utils/sms.js'
+import { sendSMS } from "../utils/sms.js";
 // ✅ Utility: Rank students by attendance %
 const rankStudents = (students, limit = 5) => {
   const ranked = students.map((s) => {
@@ -19,20 +19,17 @@ const rankStudents = (students, limit = 5) => {
 // ✅ Mark Attendance (teacher → only own class)
 export const markAttendance = async (req, res) => {
   try {
-    const { presentStudents } = req.body;
+    const { presentStudents, date } = req.body;
 
     if (!Array.isArray(presentStudents)) {
-      return res
-        .status(400)
-        .json({ message: "presentStudents must be an array" });
+      return res.status(400).json({ message: "presentStudents must be an array" });
     }
 
     // Teacher must be class teacher
     const classId = req.user.classTeacher;
+    console.log(classId)
     if (!classId) {
-      return res
-        .status(403)
-        .json({ message: "You are not assigned as a class teacher" });
+      return res.status(403).json({ message: "You are not assigned as a class teacher" });
     }
 
     const cls = await Class.findById(classId);
@@ -44,38 +41,57 @@ export const markAttendance = async (req, res) => {
       return res.status(400).json({ message: "No students in this class" });
     }
 
-    // Mark attendance (present/absent)
-    const attendanceRecords = [];
-    for (let student of allStudents) {
-      const status = presentStudents.includes(student._id.toString())
-        ? "Present"
-        : "Absent";
+    // Attendance date
+    const attendanceDate = date ? new Date(date) : new Date();
+    const startOfDay = new Date(attendanceDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(attendanceDate);
+    endOfDay.setHours(23, 59, 59, 999);
 
+    const attendanceRecords = [];
+
+    for (let student of allStudents) {
+      const studentIdStr = student._id.toString();
+
+      // Check if student is present
+      const isPresent = presentStudents.includes(studentIdStr);
+      console.log(studentIdStr  , "  ==>   " ,  isPresent )
+      const status = isPresent ? "Present" : "Absent";
+ console.log(studentIdStr, "  ==>   ", status);
+      // Prevent duplicate attendance
+      const existing = await Attendance.findOne({
+        student: student._id,
+        class: classId,
+        date: { $gte: startOfDay, $lte: endOfDay },
+      });
+
+      if (existing) continue; // skip if already marked
+
+      // Create attendance record
       const attendance = await Attendance.create({
         student: student._id,
         class: classId,
+        date: attendanceDate,
         status,
         markedBy: req.user.id,
       });
-      if (status == "Present") {
-        await sendSMS(
-          student?.parentsContact?.contact,
-          `प्रिय अभिभावक, आपका बच्चा, ${student.name} आज स्कूल में है।`
-        );
-      } else {
-        await sendSMS(
-          student?.parentsContact?.contact,
-          `प्रिय अभिभावक,
 
-          हमें सूचित करना पड़ रहा है कि आज आपका बच्चा  ${student.name} स्कूल में उपस्थित नहीं है। कृपया सुनिश्चित करें कि वे स्कूल आएं                     
- और अपनी पढ़ाई पर ध्यान दें, क्योंकि उनका भविष्य इसी पर निर्भर करता है।
+      // Send SMS
+      const contact = student?.parentsContact?.contact;
+      if (contact) {
+        const message = isPresent
+          ? `प्रिय अभिभावक, आपका बच्चा, ${student.name} आज स्कूल में है।`
+          : `प्रिय अभिभावक,
 
-           धन्यवाद! `
-        );
+हमें सूचित करना पड़ रहा है कि आज आपका बच्चा ${student.name} स्कूल में उपस्थित नहीं है। कृपया सुनिश्चित करें कि वे स्कूल आएं और अपनी पढ़ाई पर ध्यान दें, क्योंकि उनका भविष्य इसी पर निर्भर करता है।
+
+धन्यवाद!`;
+
+        await sendSMS(contact, message);
       }
-      await Student.findByIdAndUpdate(student._id, {
-        $push: { attendance: attendance._id },
-      });
+
+      // Update student's attendance array
+      await Student.findByIdAndUpdate(student._id, { $push: { attendance: attendance._id } });
 
       attendanceRecords.push(attendance);
     }
@@ -86,11 +102,10 @@ export const markAttendance = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error marking attendance:", error);
-    res
-      .status(500)
-      .json({ message: "Error marking attendance", error: error.message });
+    res.status(500).json({ message: "Error marking attendance", error: error.message });
   }
 };
+
 
 // ✅ Get Attendance by ClassId (principal / teacher only)
 export const getAttendance = async (req, res) => {
@@ -101,7 +116,9 @@ export const getAttendance = async (req, res) => {
     // Role-based restrictions
     if (req.user.role === "teacher") {
       if (req.user.classTeacher.toString() !== id) {
-        return res.status(403).json({ message: "You are not the teacher of this class" });
+        return res
+          .status(403)
+          .json({ message: "You are not the teacher of this class" });
       }
     } else if (req.user.role === "principal") {
       const school = await School.findById(req.user.school).populate("classes");
@@ -109,10 +126,14 @@ export const getAttendance = async (req, res) => {
 
       const validClassIds = school.classes.map((c) => c._id.toString());
       if (!validClassIds.includes(id)) {
-        return res.status(403).json({ message: "This class does not belong to your school" });
+        return res
+          .status(403)
+          .json({ message: "This class does not belong to your school" });
       }
     } else {
-      return res.status(403).json({ message: "Only teacher/principal can fetch class attendance" });
+      return res
+        .status(403)
+        .json({ message: "Only teacher/principal can fetch class attendance" });
     }
 
     // Query attendance

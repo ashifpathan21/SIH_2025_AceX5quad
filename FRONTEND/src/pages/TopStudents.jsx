@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { getDashboard } from "../services/principalService.js";
 import { Plus, Pencil, House, RefreshCw, Trash2, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import TopFiveLeaderboard from "../components/TopFiveLeaderboard.jsx";
 const TopStudents = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -114,8 +114,9 @@ const TopStudents = () => {
       </div>
 
       {/* Students List */}
-      <div className="space-y-3">
-        {displayedStudents.map((student, index) => (
+      <div className="space-y-3 min-h-screen ">
+        <TopFiveLeaderboard leaderboard={displayedStudents} />
+        {displayedStudents.slice(5).map((student, index) => (
           <motion.div
             key={student.name + index}
             layout
@@ -126,7 +127,7 @@ const TopStudents = () => {
           >
             {/* Rank */}
             <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-              {activeClass === "All" ? globalRankMap[student.name] : index + 1}
+              {activeClass === "All" ? globalRankMap[student.name] + 5 : index + 6}
             </div>
 
             {/* Image */}

@@ -12,7 +12,7 @@ config()
 
 // 🔑 Utility for token
 const generateToken = (id, role , school , classTeacher) => {
-  return jwt.sign({ id, role , school ,classTeacher}, process.env.JWT_SECRET, { expiresIn: "1d" });
+  return jwt.sign({ id, role , school , classTeacher}, process.env.JWT_SECRET, { expiresIn: "1d" });
 };
 
 // ---------------- Principal ----------------
@@ -50,12 +50,13 @@ export const teacherLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
     const teacher = await Teacher.findOne({ email });
+
     if (!teacher) return res.status(404).json({ message: "Teacher not found" });
 
     const isMatch = await bcrypt.compare(password, teacher.password);
     if (!isMatch)
       return res.status(401).json({ message: "Invalid credentials" });
-
+    
     const token = generateToken(teacher._id, "teacher" , teacher?.school , teacher?.classTeacher);
     let updateTeacher = teacher 
     updateTeacher.password = null ;

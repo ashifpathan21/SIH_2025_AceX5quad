@@ -23,6 +23,7 @@ const PrincipalHome = () => {
   const profile = useSelector((state) => state.principal.profile);
   const data  = useSelector((state) => state.principal.data);
   const navigate = useNavigate();
+  console.log(data)
   const [dashboardData, setDashboardData] = useState( data || {
     stats: {
       totalStudents: 0,

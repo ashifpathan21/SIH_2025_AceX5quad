@@ -98,11 +98,9 @@ export const updatePrincipalProfile = async (req, res) => {
 };
 
 
-
-
 export const getPrincipalDashboard = async (req, res) => {
   try {
-    const principalId = req.user.id; // assuming JWT middleware sets req.principal
+    const principalId = req.user.id;
     const principal = await Principal.findById(principalId)
       .select("-password")
       .populate({
@@ -110,175 +108,153 @@ export const getPrincipalDashboard = async (req, res) => {
         populate: {
           path: "classes",
           populate: [
-            {
-              path: "students",
-            },
-            {
-              path: "teachers",
-            },
-            {
-              path: "classTeacher",
-            },
+            { path: "students", select: "name image rollNumber" },
+            { path: "classTeacher", select: "name" },
+            { path: "teachers.teacher", select: "name" }, // ⚡️ teacher inside object
           ],
         },
       })
-      .populate("school.teachers");
+      .populate("school.teachers", "name");
 
     if (!principal) {
       return res.status(404).json({ message: "Principal not found" });
     }
 
-    const classes = principal.school.classes || [];
+    const classes = principal.school?.classes || [];
     const totalClasses = classes.length;
 
-    // Count total students
-    const totalStudents = classes.reduce(
-      (acc, cls) => acc + (cls.students?.length || 0),
-      0
-    );
-
-    // Count total teachers
-    const totalTeachers = principal.school.teachers?.length || 0;
-
-    // Calculate today's attendance rate
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    let attendedToday = 0;
-    let totalPossibleToday = 0;
-
+    // Flatten all students + map studentId → className
+    const studentList = [];
+    const studentToClassMap = new Map();
     for (const cls of classes) {
-      for (const student of cls.students || []) {
-        const attendanceRecord = await Attendance.findOne({
-          student: student._id,
-          date: today,
-        });
-
-        totalPossibleToday++;
-        if (attendanceRecord?.status === "present") attendedToday++;
+      for (const st of cls.students || []) {
+        studentList.push(st);
+        studentToClassMap.set(st._id.toString(), cls.name);
       }
     }
 
-    const attendanceRate =
-      totalPossibleToday > 0
-        ? Math.round((attendedToday / totalPossibleToday) * 100)
-        : 0;
+    const totalStudents = studentList.length;
+    const totalTeachers = principal.school?.teachers?.length || 0;
 
-    // Inside getPrincipalDashboard function, after calculating today's attendanceRate
+    // Dates setup
+    const now = new Date();
+    const todayStart = new Date(now);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(now);
+    todayEnd.setHours(23, 59, 59, 999);
 
-    const attendanceTrend = [];
-    
+    const PERIOD_DAYS = 7; // last 7 days trend
+    const rangeStart = new Date(todayStart);
+    rangeStart.setDate(rangeStart.getDate() - (PERIOD_DAYS - 1));
 
-    for (let i = 0; i < 7; i++) {
-      const currentDate = new Date(today);
-      currentDate.setDate(today.getDate() - i);
-      currentDate.setHours(0, 0, 0, 0);
+    // Fetch attendance for all students in this school within range
+    const studentIds = studentList.map((s) => s._id);
+    const attendanceRecords = await Attendance.find({
+      student: { $in: studentIds },
+      date: { $gte: rangeStart, $lte: todayEnd },
+    }).select("student class status date");
 
-      let attendedCount = 0;
-      let totalCount = 0;
+    // Aggregation helpers
+    const perDatePresent = new Map(); // dateKey → Set of present studentIds
+    const perStudentStats = new Map(); // studentId → { presentCount, recordCount, name, image }
+    const perClassTodayPresent = new Map(); // classId → Set of present studentIds
 
-      for (const cls of classes) {
-        for (const student of cls.students || []) {
-          const attendanceRecord = await Attendance.findOne({
-            student: student._id,
-            date: currentDate,
-          });
-          totalCount++;
-          if (attendanceRecord?.status === "present") {
-            attendedCount++;
-          }
-        }
-      }
+    const toDateKey = (d) => new Date(d).toISOString().split("T")[0];
+    const todayKey = toDateKey(todayStart);
 
-      const dailyAttendanceRate =
-        totalCount > 0 ? Math.round((attendedCount / totalCount) * 100) : 0;
-      attendanceTrend.push({
-        date: currentDate.toISOString().split("T")[0], // Format date as YYYY-MM-DD
-        rate: dailyAttendanceRate,
+    // Init students in stats
+    for (const st of studentList) {
+      perStudentStats.set(st._id.toString(), {
+        name: st.name,
+        image: st.image,
+        presentCount: 0,
+        recordCount: 0,
       });
     }
-    // Reverse to get chronological order (oldest to newest)
-    attendanceTrend.reverse();
 
-    // Inside getPrincipalDashboard function, after attendanceTrend calculation
+    // Process attendance records
+    for (const rec of attendanceRecords) {
+      const sid = rec.student.toString();
+      const dateKey = toDateKey(rec.date);
 
-    const studentAttendanceMap = new Map();
+      if (!perDatePresent.has(dateKey)) perDatePresent.set(dateKey, new Set());
+      if (rec.status === "Present") perDatePresent.get(dateKey).add(sid);
 
-    // Initialize map with all students
-    for (const cls of classes) {
-      for (const student of cls.students || []) {
-        studentAttendanceMap.set(student._id.toString(), {
-          name: student.name,
-          image:student.image,
-          totalClassesAttended: 0,
-          totalClasses: 0,
-          class:cls.name
-        });
+      // Per-student stats
+      if (perStudentStats.has(sid)) {
+        const stats = perStudentStats.get(sid);
+        stats.recordCount++;
+        if (rec.status === "Present") stats.presentCount++;
+      }
+
+      // Today's per-class
+      if (dateKey === todayKey && rec.status === "Present") {
+        const classId = rec.class?.toString();
+        if (classId) {
+          if (!perClassTodayPresent.has(classId))
+            perClassTodayPresent.set(classId, new Set());
+          perClassTodayPresent.get(classId).add(sid);
+        }
       }
     }
 
-    // Iterate through attendance records to populate counts
-    // You might need to fetch all attendance records for the relevant period
-    // For simplicity, this example assumes attendance records are available and can be queried efficiently.
-    // A more robust solution might involve querying attendance for a specific date range.
-    const allAttendanceRecords = await Attendance.find({
-      student: { $in: Array.from(studentAttendanceMap.keys()).map((id) => id) }, // This part needs refinement to get student IDs correctly
-      // Add date range if necessary: date: { $gte: sevenDaysAgo, $lte: today }
+    // Today's attendance rate
+    const presentToday = (perDatePresent.get(todayKey) || new Set()).size;
+    const attendanceRate =
+      totalStudents > 0 ? Math.round((presentToday / totalStudents) * 100) : 0;
+
+    // Attendance trend (last 7 days)
+    const attendanceTrend = [];
+    for (let i = PERIOD_DAYS - 1; i >= 0; i--) {
+      const d = new Date(todayStart);
+      d.setDate(d.getDate() - i);
+      const key = toDateKey(d);
+      const presentCount = (perDatePresent.get(key) || new Set()).size;
+      const rate =
+        totalStudents > 0
+          ? Math.round((presentCount / totalStudents) * 100)
+          : 0;
+      attendanceTrend.push({ date: key, rate });
+    }
+
+    // Top students
+    const topStudents = Array.from(perStudentStats.entries())
+      .map(([id, stats]) => ({
+        id,
+        name: stats.name,
+        image: stats.image,
+        class: studentToClassMap.get(id),
+        totalClassesAttended: stats.presentCount,
+        totalClasses: stats.recordCount,
+        attendancePercentage: stats.recordCount
+          ? Math.round((stats.presentCount / stats.recordCount) * 100)
+          : 0,
+      }))
+      .sort(
+        (a, b) =>
+          b.attendancePercentage - a.attendancePercentage ||
+          b.totalClassesAttended - a.totalClassesAttended
+      )
+      .slice(0, 5);
+
+    // Class-wise attendance (today)
+    const classAttendance = classes.map((cls) => {
+      const studentsCount = (cls.students || []).length;
+      const presentCount = (
+        perClassTodayPresent.get(cls._id.toString()) || new Set()
+      ).size;
+      return {
+        className: cls.name,
+        attendanceRate:
+          studentsCount > 0
+            ? Math.round((presentCount / studentsCount) * 100)
+            : 0,
+        presentCount,
+        totalStudents: studentsCount,
+      };
     });
 
-    for (const record of allAttendanceRecords) {
-      const studentId = record.student.toString();
-      if (studentAttendanceMap.has(studentId)) {
-        const studentData = studentAttendanceMap.get(studentId);
-        studentData.totalClasses++;
-        if (record.status === "present") {
-          studentData.totalClassesAttended++;
-        }
-      }
-    }
-
-    const topStudents = Array.from(studentAttendanceMap.values())
-      .map((student) => ({
-        ...student,
-        attendancePercentage:
-          student.totalClasses > 0
-            ? Math.round(
-                (student.totalClassesAttended / student.totalClasses) * 100
-              )
-            : 0,
-      }))
-      .sort((a, b) => b.attendancePercentage - a.attendancePercentage) // Sort by attendance descending
-      .slice(0, 5); // Get top 5 students
-
-    // Inside getPrincipalDashboard function, after topStudents calculation
-
-    const classAttendance = [];
-
-    for (const cls of classes) {
-      let attendedCount = 0;
-      let totalCount = 0;
-
-      for (const student of cls.students || []) {
-        const attendanceRecord = await Attendance.findOne({
-          student: student._id,
-          date: today,
-        });
-        totalCount++;
-        if (attendanceRecord?.status === "present") {
-          attendedCount++;
-        }
-      }
-
-      const dailyAttendanceRate =
-        totalCount > 0 ? Math.round((attendedCount / totalCount) * 100) : 0;
-
-      classAttendance.push({
-        className: cls.name,
-        attendanceRate: dailyAttendanceRate,
-      });
-    }
-
-    // Build dashboard response
+    // Final response
     const dashboardData = {
       stats: {
         totalStudents,
@@ -286,14 +262,14 @@ export const getPrincipalDashboard = async (req, res) => {
         totalTeachers,
         attendanceRate,
       },
-      attendanceTrend, // You can calculate last 7 days attendance
-      topStudents, // Sort students by attendance or marks
-      classAttendance // Attendance per class
-          };
+      attendanceTrend,
+      topStudents,
+      classAttendance,
+    };
 
     res.status(200).json(dashboardData);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server Error" });
+    console.error("❌ getPrincipalDashboard error:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };

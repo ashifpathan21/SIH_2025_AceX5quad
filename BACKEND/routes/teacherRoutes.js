@@ -19,6 +19,7 @@ import { upload } from "../middlewares/multer.js";
 const router = express.Router();
 
 router.post("/login", teacherLogin);
+
 // ✅ Create teacher (only principal)
 router.post(
   "/create",
