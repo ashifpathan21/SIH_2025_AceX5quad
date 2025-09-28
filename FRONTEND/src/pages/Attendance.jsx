@@ -10,15 +10,19 @@ const Attendance = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { classes } = useSelector((state) => state.classes);
-  const { attendance, loading } = useSelector((state) => state.attendance);
+  const { records, loading } = useSelector((state) => state.attendance);
+  const attendance = records;
 
   const token = localStorage.getItem("principalToken");
   const [activeClass, setActiveClass] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0] // default today
+  );
 
   useEffect(() => {
     async function fetchData() {
       await dispatch(getAllClasses(token));
-      if (classes.length > 0) setActiveClass(classes[0]._id); // default first class
+      if (classes.length > 0) setActiveClass(classes[0]._id);
     }
     fetchData();
   }, [dispatch, token, classes.length]);
@@ -28,6 +32,13 @@ const Attendance = () => {
       dispatch(getAttendanceByClass(activeClass, token));
     }
   }, [activeClass, dispatch, token]);
+
+  // 🔹 date-wise filter apply
+  const filteredAttendance = selectedDate
+    ? attendance?.filter(
+        (rec) => new Date(rec.date).toLocaleDateString("en-CA") === selectedDate
+      )
+    : attendance;
 
   return (
     <div className="p-6 min-h-screen">
@@ -69,6 +80,19 @@ const Attendance = () => {
         ))}
       </div>
 
+      {/* 🔹 Date Filter */}
+      <div className="mb-6 flex items-center gap-4">
+        <label className="font-medium">Filter by Date:</label>
+        <input
+          type="date"
+          value={selectedDate}
+          max={new Date().toISOString().split("T")[0]}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          className="px-3 py-2 border rounded-lg"
+        />
+       
+      </div>
+
       {/* Attendance List */}
       {loading ? (
         <div className="flex justify-center py-10">
@@ -78,15 +102,15 @@ const Attendance = () => {
         <p className="text-gray-500">
           Please select a class to view attendance.
         </p>
-      ) : attendance?.length === 0 ? (
+      ) : filteredAttendance?.length === 0 ? (
         <p className="text-gray-500">No attendance records found.</p>
       ) : (
         <div className="bg-white shadow rounded-lg p-5 border border-gray-100">
           <h2 className="text-lg font-semibold mb-4">
-            Attendance Records ({attendance?.length || 0})
+            Attendance Records ({filteredAttendance?.length || 0})
           </h2>
           <div className="grid gap-3">
-            {attendance?.map((record, idx) => (
+            {filteredAttendance?.map((record, idx) => (
               <motion.div
                 key={idx}
                 layout

@@ -41,8 +41,18 @@ const PrincipalHome = () => {
   const dispatch = useDispatch();
 
   // Fetch dashboard data
-  const fetchDashboardData = async () => {
+  const fetchData = async () => {
     if (!token || data ) return;
+    try {
+      const res = await dispatch(getDashboard(token));
+      setDashboardData(res);
+    } catch (err) {
+      setError("Failed to fetch dashboard data");
+      console.error(err);
+    }
+  };
+  const fetchDashboardData = async () => {
+    if (!token  ) return;
     try {
       const res = await dispatch(getDashboard(token));
       setDashboardData(res);
@@ -73,11 +83,16 @@ const PrincipalHome = () => {
     await fetchDashboardData();
     setIsLoading(false);
   };
+  const handleOpen = async () => {
+    setIsLoading(true);
+    await fetchData();
+    setIsLoading(false);
+  };
 
   // Load data on component mount
   useEffect(() => {
     if(!data || !dashboardData)
-  { handleRefresh()}
+  { handleOpen()}
   }, []);
 
   if (isLoading) {

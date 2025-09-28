@@ -18,17 +18,14 @@ const sanitizeStudent = (student) => {
 // ✅ Create Student (only principal)
 export const createStudent = async (req, res) => {
   try {
-    const {
-      name,
-      rollNumber,
-      password,
-      RFID,
-      classId,
-      parentsContact,
-      schoolId,
-    } = req.body;
-
-    if (!name || !rollNumber || !password || !classId) {
+    const { name, rollNumber, password, RFID } = req.body;
+    let parentsContact = {};
+    parentsContact = JSON.parse(req.body.parentsContact);
+    console.log(parentsContact);
+    const classId = req.user.classTeacher;
+    const schoolId = req.user.school;
+    console.log(classId, schoolId);
+    if (!name || !rollNumber || !password) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -207,8 +204,6 @@ export const getStudent = async (req, res) => {
   }
 };
 
-
-
 export const deleteStudent = async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
@@ -253,5 +248,4 @@ export const deleteStudent = async (req, res) => {
     console.error(err.message);
     res.status(500).json({ message: err.message });
   }
-
 };

@@ -116,7 +116,7 @@ const TopStudents = () => {
       {/* Students List */}
       <div className="space-y-3 min-h-screen ">
         <TopFiveLeaderboard leaderboard={displayedStudents} />
-        {displayedStudents.slice(5).map((student, index) => (
+        {displayedStudents.slice(5 , displayedStudents.length).map((student, index) => (
           <motion.div
             key={student.name + index}
             layout
