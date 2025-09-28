@@ -1,4 +1,4 @@
-import React, { useState , useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Eye,
   EyeOff,
@@ -6,27 +6,26 @@ import {
   AlertCircle,
   Loader2,
   School,
+  RefreshCw,
 } from "lucide-react";
-import toast from "react-hot-toast";
-import {useDispatch} from 'react-redux'
+import { toast } from "react-toastify";
 import Alert from "../components/Alert.jsx";
 import Button from "../components/Button.jsx";
 import Input from "../components/Input.jsx";
 import { loginPrincipal } from "../services/principalService.js";
-import {useNavigate } from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
+import { getPrincipalProfile } from "../services/principalService.js";
+import { setPrincipal, setLoading } from "../redux/slices/principalSlice.js";
+import { useDispatch, useSelector } from "react-redux";
+
 // Utility function for combining classNames
 const cn = (...classes) => classes.filter(Boolean).join(" ");
-
-
-
-
-
 
 // Main PrincipalLogin Component
 const PrincipalLogin = () => {
   const [token] = useState(localStorage.getItem("principalToken"));
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   // Form state
   const [formData, setFormData] = useState({
     email: "",
@@ -38,12 +37,23 @@ const PrincipalLogin = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
-
-  useEffect(() => {
-    if(token){
-      navigate('/principal/home')
+  const { profile, loading } = useSelector((state) => state.principal);
+  const get = async () => {
+    try {
+      dispatch(setLoading(true));
+      const res = await dispatch(getPrincipalProfile(token));
+      navigate("/principal/home");
+      dispatch(setLoading(false));
+    } catch (err) {
+      toast.error(err.message);
+      localStorage.removeItem("principalToken");
     }
-  }, [token])
+  };
+  useEffect(() => {
+    if (token) {
+      get();
+    }
+  }, [token]);
   // Validation function
   const validateForm = () => {
     const newErrors = {};
@@ -81,18 +91,28 @@ const PrincipalLogin = () => {
     }
   };
 
-  const handleSubmit = async(e) => {
-    e.preventDefault()
-   try {
-     const res = await dispatch(
-       loginPrincipal({ email: formData.email, password: formData.password })
-     );
-       navigate('/principal/home')
-   } catch (error) {
-    setApiError(error.message)
-   }
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await dispatch(
+        loginPrincipal({ email: formData.email, password: formData.password })
+      );
+      navigate("/principal/home");
+    } catch (error) {
+      setApiError(error.message);
+    }
+  };
 
+  // Show nothing or a loader while fetching profile
+  if (loading)
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading</p>
+        </div>
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
@@ -206,6 +226,13 @@ const PrincipalLogin = () => {
                 </button>
               </div>
 
+
+
+               <div className='p-2 font-semibold '>
+                <h5>Use Sample Input (all the data is dynamic) </h5>
+                <p>Email : rsk@gmail.com</p>
+                <p>Password : rsk@123</p>
+               </div>
               {/* Submit Button */}
               <Button
                 onClick={handleSubmit}

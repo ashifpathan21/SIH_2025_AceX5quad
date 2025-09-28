@@ -21,8 +21,9 @@ import { getDashboard } from "../services/principalService.js";
 const PrincipalHome = () => {
   const [token] = useState(localStorage.getItem("principalToken"));
   const profile = useSelector((state) => state.principal.profile);
+  const data  = useSelector((state) => state.principal.data);
   const navigate = useNavigate();
-  const [dashboardData, setDashboardData] = useState({
+  const [dashboardData, setDashboardData] = useState( data || {
     stats: {
       totalStudents: 0,
       totalClasses: 0,
@@ -34,16 +35,15 @@ const PrincipalHome = () => {
     classAttendance: [],
     recentActivities: [],
   });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const dispatch = useDispatch();
 
   // Fetch dashboard data
   const fetchDashboardData = async () => {
-    if (!token) return;
+    if (!token || data ) return;
     try {
       const res = await dispatch(getDashboard(token));
-      console.log(res);
       setDashboardData(res);
     } catch (err) {
       setError("Failed to fetch dashboard data");
@@ -75,12 +75,8 @@ const PrincipalHome = () => {
 
   // Load data on component mount
   useEffect(() => {
-    setIsLoading(true);
-    const loa = async () => {
-      await fetchDashboardData();
-    };
-    loa();
-    setIsLoading(false);
+    if(!data || !dashboardData)
+  { handleRefresh()}
   }, []);
 
   if (isLoading) {

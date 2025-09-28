@@ -1,7 +1,7 @@
 // src/services/classService.js
 import { apiConnector } from "../api/apiConnector";
 import { classEndpoints } from "../api/apis";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { setClasses, setLoading, setError } from "../redux/slices/classSlice";
 
 // ✅ Create Class
@@ -36,8 +36,8 @@ export function getAllClasses(token) {
       const res = await apiConnector("GET", classEndpoints.GET_ALL, null, {
         Authorization: `Bearer ${token}`,
       });
-      console.log(res)
-      dispatch(setClasses(res.data|| []));
+      console.log(res);
+      dispatch(setClasses(res.data || []));
       return res.data;
     } catch (error) {
       dispatch(setError("Failed to fetch classes"));

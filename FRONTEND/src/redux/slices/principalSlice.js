@@ -4,6 +4,7 @@ const initialState = {
   profile: null,
   loading: false,
   error: null,
+  data: null 
 };
 
 const principalSlice = createSlice({
@@ -19,8 +20,11 @@ const principalSlice = createSlice({
     setError: (state, action) => {
       state.error = action.payload;
     },
+    setData: (state, action) => {
+      state.data = action.payload;
+    },
   },
 });
 
-export const { setPrincipal, setLoading, setError } = principalSlice.actions;
+export const { setPrincipal, setLoading, setError , setData } = principalSlice.actions;
 export default principalSlice.reducer;

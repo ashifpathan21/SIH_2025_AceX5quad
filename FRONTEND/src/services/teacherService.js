@@ -1,7 +1,7 @@
 // src/services/teacherService.js
 import { apiConnector } from "../api/apiConnector";
 import { teacherEndpoints } from "../api/apis";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import {
   setTeachers,
   setLoading,
@@ -12,22 +12,22 @@ import {
 export function createTeacher(data, token) {
   return async (dispatch) => {
     try {
-      console.log(data) ;
+      console.log(data);
 
       dispatch(setLoading(true));
       const res = await apiConnector("POST", teacherEndpoints.CREATE, data, {
         Authorization: `Bearer ${token}`,
       });
-      console.log(res) 
+      console.log(res);
 
       toast.success("Teacher created successfully");
 
       // Refresh after creating
       dispatch(getAllTeachers(token));
-          
+
       return res.data;
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error("Failed to create teacher");
       return null;
     } finally {
@@ -64,7 +64,7 @@ export function getAllTeachers(token) {
       const res = await apiConnector("GET", teacherEndpoints.GET_ALL, null, {
         Authorization: `Bearer ${token}`,
       });
-      console.log(res)
+      console.log(res);
       dispatch(setTeachers(res.data));
       return res.data;
     } catch (error) {
@@ -109,19 +109,19 @@ export function getTeacherById(id, token) {
 export function updateTeacher(id, data, token) {
   return async (dispatch) => {
     try {
-      console.log(data)
+      console.log(data);
       dispatch(setLoading(true));
       const res = await apiConnector("PUT", teacherEndpoints.UPDATE(id), data, {
         Authorization: `Bearer ${token}`,
       });
       toast.success("Teacher updated successfully");
-       console.log(res)
+      console.log(res);
       // Refresh after update
       dispatch(getAllTeachers(token));
 
       return res.data;
     } catch (error) {
-      console.log(error)
+      console.log(error);
       dispatch(
         setError(error.response?.data?.message || "Failed to update teacher")
       );

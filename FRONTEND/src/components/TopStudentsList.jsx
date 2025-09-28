@@ -25,7 +25,6 @@ const cn = (...classes) => classes.filter(Boolean).join(" ");
 
 // Top Students List Component
 const TopStudentsList = ({ students }) => {
-  console.log(students)
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -40,20 +39,22 @@ const TopStudentsList = ({ students }) => {
       <div className="space-y-3">
         {students.map((student, index) => (
           <div
-            key={student._id}
+            key={index}
             className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <div className="flex items-center gap-3 flex-1">
               <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
                 {index + 1}
               </div>
-              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-sm font-semibold text-indigo-600">
+              <div className="w-10 h-10 overflow-hidden object-cover bg-indigo-100 rounded-full flex items-center justify-center text-sm font-semibold text-indigo-600">
                 <img
-                  src={student?.image}
-                  alt={student.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
+                  className="object-cover overflow-hidden"
+                  src={student?.image || "/student.avif"}
+                  alt=""
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/fallback-logo.png"; // दूसरा logo load करेगा
+                  }}
                 />
               </div>
               <div className="flex-1 min-w-0">

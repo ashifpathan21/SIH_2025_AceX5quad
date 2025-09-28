@@ -1,7 +1,7 @@
 // src/services/foodMenuService.js
 import { apiConnector } from "../api/apiConnector";
 import { foodMenuEndpoints } from "../api/apis";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { setMenu, setLoading, setError } from "../redux/slices/foodMenuSlice";
 
 // ✅ Create Food Menu

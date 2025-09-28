@@ -41,7 +41,6 @@ const Teachers = () => {
   }, [token]);
 
   const handleSubmit = (data) => {
-    console.log(data)
     if (editData) {
       dispatch(updateTeacher(editData._id, data, token));
     } else {
@@ -50,6 +49,8 @@ const Teachers = () => {
     }
     setIsOpen(false);
   };
+
+
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this teacher?")) {
@@ -92,7 +93,12 @@ const Teachers = () => {
 
       {/* Teacher List */}
       {loading ? (
-        <p>Loading...</p>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <RefreshCw className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-4" />
+            <p className="text-gray-600">Loading </p>
+          </div>
+        </div>
       ) : teachers.length === 0 ? (
         <p className="text-gray-500">No teachers available.</p>
       ) : (

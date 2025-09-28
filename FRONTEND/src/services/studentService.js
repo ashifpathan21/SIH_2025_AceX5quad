@@ -1,7 +1,7 @@
 // src/services/studentService.js
 import { apiConnector } from "../api/apiConnector";
 import { studentEndpoints } from "../api/apis";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import {
   setStudents,
   setLoading,
@@ -38,12 +38,12 @@ export function createStudent(data, token) {
 export function getAllStudents(token) {
   return async (dispatch) => {
     try {
-      console.log("getting Students")
+      console.log("getting Students");
       dispatch(setLoading(true));
       const res = await apiConnector("GET", studentEndpoints.GET_ALL, null, {
         Authorization: `Bearer ${token}`,
       });
-      console.log(res)
+      console.log(res);
       dispatch(setStudents(res.data));
       return res.data;
     } catch (error) {

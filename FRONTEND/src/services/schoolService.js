@@ -1,7 +1,7 @@
 // src/services/schoolService.js
 import { apiConnector } from "../api/apiConnector";
 import { schoolEndpoints } from "../api/apis";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import { setSchools, setLoading, setError } from "../redux/slices/schoolSlice";
 
 // ✅ Create School

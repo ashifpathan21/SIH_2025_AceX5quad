@@ -1,12 +1,13 @@
 import { apiConnector } from "../api/apiConnector";
 import { principalEndpoints } from "../api/apis";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import {
   setPrincipal,
   setLoading,
   setError,
+  setData,
 } from "../redux/slices/principalSlice";
-
+import { useDispatch } from "react-redux";
 // ✅ Register Principal
 export function registerPrincipal(data) {
   return async (dispatch) => {
@@ -33,9 +34,7 @@ export function loginPrincipal(data) {
     try {
       const res = await apiConnector("POST", principalEndpoints.LOGIN, data);
       toast.success("Login successful");
-      console.log(res);
       dispatch(setPrincipal(res.data.principal || null));
-
       // 🛑 Save token to localStorage
       if (res.data?.token) {
         localStorage.setItem("principalToken", res.data.token);
@@ -78,7 +77,7 @@ export function getPrincipalProfile(token) {
   };
 }
 export function getDashboard(token) {
-  return async () => {
+  return async (dispatch) => {
     setLoading(true);
     try {
       const res = await apiConnector(
@@ -89,10 +88,11 @@ export function getDashboard(token) {
           Authorization: `Bearer ${token}`,
         }
       );
-
+      dispatch(setData(res.data)) ;
       return res.data;
     } catch (error) {
-      toast.error("Failed to fetch profile");
+      console.log(error);
+      toast.error("Failed to fetch dashboard data ");
       return null;
     } finally {
     }

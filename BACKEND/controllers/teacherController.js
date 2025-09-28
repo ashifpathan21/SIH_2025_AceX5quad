@@ -15,17 +15,16 @@ const sanitizeTeacher = (teacher) => {
   return obj;
 };
 
-// ✅ Create Teacher (only principal)
+// ✅ Create Teacher
 export const createTeacher = async (req, res) => {
   try {
-    const {
-      name,
-      email,
-      password,
-      classTeacher,
-      assignedClasses = [],
-    } = req.body;
+    const { name, email, password, classTeacher } = req.body;
+    let assignedClasses = [];
     const school = req.user.school;
+
+    if (req.body.assignedClasses) {
+      assignedClasses = JSON.parse(req.body.assignedClasses);
+    }
 
     if (!name || !email || !password || !school) {
       return res
@@ -54,7 +53,7 @@ export const createTeacher = async (req, res) => {
       image: imageUrl,
       imageId,
       classTeacher,
-      assignedClasses,
+      assignedClasses: [],
       school,
     });
 
@@ -70,14 +69,27 @@ export const createTeacher = async (req, res) => {
       });
     }
 
-    // 🔗 Add to assigned classes
-    if (assignedClasses?.length) {
-      for (const cls of assignedClasses) {
-        await Class.findByIdAndUpdate(cls.class, {
-          $addToSet: { teachers: teacher._id },
-        });
+    // 🔗 Assign classes (two-way + no duplicate)
+    for (const cls of assignedClasses) {
+      const classDoc = await Class.findById(cls.class);
+      if (
+        !classDoc.teachers.some(
+          (t) =>
+            t.teacher.toString() === teacher._id.toString() &&
+            t.subject === cls.subject
+        )
+      ) {
+        classDoc.teachers.push({ teacher: teacher._id, subject: cls.subject });
+        await classDoc.save();
       }
+
+      teacher.assignedClasses.push({
+        class: cls.class,
+        subject: cls.subject,
+      });
     }
+
+    await teacher.save();
 
     res.status(201).json({
       message: "Teacher created successfully",
@@ -91,8 +103,13 @@ export const createTeacher = async (req, res) => {
 // ✅ Update Teacher
 export const updateTeacher = async (req, res) => {
   try {
-    const { name, email, password, classTeacher, assignedClasses } = req.body;
+    const { name, email, password, classTeacher } = req.body;
+    let assignedClasses = []
     const school = req.user.school;
+     
+    if (req.body.assignedClasses) {
+      assignedClasses = JSON.parse(req.body.assignedClasses);
+    }
 
     const teacher = await Teacher.findById(req.params.id);
     if (!teacher) return res.status(404).json({ message: "Teacher not found" });
@@ -103,10 +120,7 @@ export const updateTeacher = async (req, res) => {
 
     // 🔄 Handle image update
     if (req.file) {
-      // delete old image
-      if (teacher.imageId) {
-        await deleteFromCloudinary(teacher.imageId);
-      }
+      if (teacher.imageId) await deleteFromCloudinary(teacher.imageId);
       const uploadRes = await uploadToCloudinary(req.file.buffer, "teachers");
       teacher.image = uploadRes.secure_url;
       teacher.imageId = uploadRes.public_id;
@@ -139,20 +153,39 @@ export const updateTeacher = async (req, res) => {
       });
     }
 
-    // 🔄 Update assignedClasses
+    // 🔄 Update assignedClasses (reset + rebind two-way)
     if (assignedClasses) {
-      // remove teacher from old
+      // remove from old
       for (const cls of teacher.assignedClasses) {
         await Class.findByIdAndUpdate(cls.class, {
-          $pull: { teachers: teacher._id },
+          $pull: { teachers: { teacher: teacher._id, subject: cls.subject } },
         });
       }
-      teacher.assignedClasses = assignedClasses;
+
+      teacher.assignedClasses = [];
 
       // add to new
       for (const cls of assignedClasses) {
-        await Class.findByIdAndUpdate(cls.class, {
-          $addToSet: { teachers: teacher._id },
+      
+        const classDoc = await Class.findById(cls.class);
+
+        if (
+          !classDoc?.teachers.some(
+            (t) =>
+              t.teacher.toString() === teacher._id.toString() &&
+              t.subject === cls.subject
+          )
+        ) {
+          classDoc?.teachers.push({
+            teacher: teacher._id,
+            subject: cls.subject,
+          });
+          await classDoc.save();
+        }
+
+        teacher.assignedClasses.push({
+          class: cls.class,
+          subject: cls.subject,
         });
       }
     }
@@ -164,6 +197,7 @@ export const updateTeacher = async (req, res) => {
       teacher: sanitizeTeacher(teacher),
     });
   } catch (err) {
+    console.log(err)
     res.status(500).json({ message: err.message });
   }
 };
@@ -174,10 +208,8 @@ export const deleteTeacher = async (req, res) => {
     const teacher = await Teacher.findById(req.params.id);
     if (!teacher) return res.status(404).json({ message: "Teacher not found" });
 
-    // 🔹 Delete profile image from Cloudinary
-    if (teacher.imageId) {
-      await deleteFromCloudinary(teacher.imageId);
-    }
+    // 🔹 Delete profile image
+    if (teacher.imageId) await deleteFromCloudinary(teacher.imageId);
 
     // 🔹 Remove from school
     await School.findByIdAndUpdate(teacher.school, {
@@ -191,10 +223,10 @@ export const deleteTeacher = async (req, res) => {
       });
     }
 
-    // 🔹 Remove from assigned classes
+    // 🔹 Remove from assignedClasses
     for (const cls of teacher.assignedClasses) {
       await Class.findByIdAndUpdate(cls.class, {
-        $pull: { teachers: teacher._id },
+        $pull: { teachers: { teacher: teacher._id, subject: cls.subject } },
       });
     }
 
@@ -220,7 +252,7 @@ export const getTeachers = async (req, res) => {
   }
 };
 
-// ✅ Get one teacher by ID
+// ✅ Get one teacher
 export const getTeacher = async (req, res) => {
   try {
     const teacher = await Teacher.findById(req.params.id)

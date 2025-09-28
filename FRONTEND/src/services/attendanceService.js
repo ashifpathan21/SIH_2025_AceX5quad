@@ -1,7 +1,7 @@
 // src/services/attendanceService.js
 import { apiConnector } from "../api/apiConnector";
 import { attendanceEndpoints } from "../api/apis";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import {
   setAttendance,
   setLoading,
@@ -42,7 +42,7 @@ export function getAttendanceByClass(classId, token) {
           Authorization: `Bearer ${token}`,
         }
       );
-      console.log(res)
+      console.log(res);
       dispatch(setAttendance(res.data.attendance || []));
       return res.data.attendance;
     } catch (error) {
@@ -68,7 +68,7 @@ export function getAttendanceByStudent(studentId, token) {
           Authorization: `Bearer ${token}`,
         }
       );
-      console.log(res)
+      console.log(res);
       dispatch(setAttendance(res.data.attendance || []));
       return res.data.attendance;
     } catch (error) {

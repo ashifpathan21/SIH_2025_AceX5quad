@@ -25,7 +25,6 @@ const cn = (...classes) => classes.filter(Boolean).join(" ");
 
 // Attendance Trend Chart (Simple Line Chart)
 const AttendanceTrendChart = ({ data }) => {
-  console.log(data)
   const maxValue = Math.max(...data?.map((item) => item?.rate)) 
   const minValue = Math.min(...data?.map((item) => item?.rate)) 
   const range = maxValue - minValue;

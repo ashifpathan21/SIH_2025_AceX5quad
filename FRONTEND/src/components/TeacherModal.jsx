@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { X, Plus, Trash2 } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 const TeacherModal = ({
   isOpen,
