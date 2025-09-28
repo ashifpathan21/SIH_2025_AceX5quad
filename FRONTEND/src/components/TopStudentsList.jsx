@@ -25,6 +25,7 @@ const cn = (...classes) => classes.filter(Boolean).join(" ");
 
 // Top Students List Component
 const TopStudentsList = ({ students }) => {
+  
   const navigate = useNavigate();
   //console.log(students)
   return (
@@ -71,12 +72,12 @@ const TopStudentsList = ({ students }) => {
             </div>
             <div className="text-right">
               <p className="text-sm font-semibold text-green-600">
-                {student.totalClassesAttended}%
+                {student.attendancePercentage}%
               </p>
               <div className="w-16 bg-gray-200 rounded-full h-1.5 mt-1">
                 <div
                   className="bg-green-500 h-1.5 rounded-full transition-all duration-500"
-                  style={{ width: `${student.totalClasses}%` }}
+                  style={{ width: `${student.attendancePercentage}%` }}
                 />
               </div>
             </div>
