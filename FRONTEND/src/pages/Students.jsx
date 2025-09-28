@@ -1,39 +1,46 @@
 // src/pages/Students.jsx
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {useNavigate } from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { RefreshCw , House, UserPlus, Trash2, Edit3, Users } from "lucide-react";
-import {
-  getAllStudents,
-  deleteStudent,
-  updateStudent,
-} from "../services/studentService";
+import { RefreshCw, House, Trash2, Edit3, Users } from "lucide-react";
+import { getAllStudents, deleteStudent } from "../services/studentService";
 
 const Students = () => {
   const token = localStorage.getItem("principalToken");
   const dispatch = useDispatch();
-  const navigate = useNavigate()
-  const {  loading, error } = useSelector((state) => state.students);
-  const [students , setStudents ]  = useState([])
-  const [selectedClass, setSelectedClass] = useState("All");
+  const navigate = useNavigate();
+  const { loading, error } = useSelector((state) => state.students);
+  const [students, setStudents] = useState([]);
+  const [activeClass, setActiveClass] = useState("All");
 
   // ✅ Fetch students
   useEffect(() => {
-  async function getS(){
-        const res = await dispatch(getAllStudents(token));
-        console.log(res)
-        setStudents(res)
+    async function getS() {
+      const res = await dispatch(getAllStudents(token));
+      setStudents(res);
     }
-    getS()
-
+    getS();
   }, [dispatch, token]);
 
-  // ✅ Filtered students
-  const filteredStudents =
-    selectedClass === "All"
-      ? students
-      : students.filter((s) => s.class?.name === selectedClass);
+  // ✅ Group students by class
+  const groupedByClass = students.reduce((acc, student) => {
+    const className = student.class?.name || "Unassigned";
+    if (!acc[className]) acc[className] = [];
+    acc[className].push(student);
+    return acc;
+  }, {});
+
+  // ✅ Class names (with "All" tab)
+  const classTabs = ["All", ...Object.keys(groupedByClass)];
+
+  // ✅ Students to display (with rollNumber sort)
+  const displayedStudents =
+    activeClass === "All"
+      ? [...students].sort((a, b) => (a.rollNumber || 0) - (b.rollNumber || 0))
+      : [...(groupedByClass[activeClass] || [])].sort(
+          (a, b) => (a.rollNumber || 0) - (b.rollNumber || 0)
+        );
 
   // ✅ Handle delete
   const handleDelete = (id) => {
@@ -50,9 +57,9 @@ const Students = () => {
           <Users className="w-6 h-6 text-indigo-600" />
           Students
         </h1>
-        <div className=' flex items-center gap-6 p-3'>
+        <div className="flex items-center gap-6 p-3">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
           >
             <House className="w-4 h-4" />
@@ -68,24 +75,21 @@ const Students = () => {
         </div>
       </div>
 
-      {/* Class Filter */}
-      <div className="mb-6 flex items-center gap-4">
-        <label className="text-sm font-medium text-gray-700">Filter:</label>
-        <select
-          value={selectedClass}
-          onChange={(e) => setSelectedClass(e.target.value)}
-          className="px-3 py-2 border rounded-lg shadow-sm"
-        >
-          <option value="All">All Classes</option>
-          {[...new Set(students?.map((s) => s.class?.name))]?.map(
-            (cls, idx) =>
-              cls && (
-                <option key={idx} value={cls}>
-                  {cls}
-                </option>
-              )
-          )}
-        </select>
+      {/* Tabs for Classes */}
+      <div className="flex gap-4 border-b border-gray-300 mb-6">
+        {classTabs.map((cls) => (
+          <button
+            key={cls}
+            onClick={() => setActiveClass(cls)}
+            className={`px-4 py-2 rounded-t-lg font-medium transition ${
+              activeClass === cls
+                ? "bg-gray-800 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            {cls}
+          </button>
+        ))}
       </div>
 
       {/* Error State */}
@@ -103,16 +107,16 @@ const Students = () => {
       ) : (
         <motion.div
           layout
-          className="grid grid-cols-1 min-h-screen  sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {filteredStudents?.map((student) => (
+          {displayedStudents.map((student) => (
             <motion.div
               key={student._id}
               layout
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -30 }}
-              className="bg-white shadow shadow-violet-600  h-38 flex items-center justify-between p-2 rounded-xl  hover:shadow-md transition"
+              className="bg-white shadow h-20 flex items-center justify-between p-2 rounded-xl hover:shadow-md transition"
             >
               <div className="flex items-center gap-4">
                 <img
@@ -129,9 +133,6 @@ const Students = () => {
                   </h3>
                   <p className="text-sm text-gray-600">
                     Roll: {student.rollNumber}
-                  </p>
-                  <p className="text-sm text-indigo-600">
-                    Class: {student.class?.name || "N/A"}
                   </p>
                 </div>
               </div>
@@ -156,7 +157,7 @@ const Students = () => {
       )}
 
       {/* Empty State */}
-      {!loading && filteredStudents?.length === 0 && (
+      {!loading && displayedStudents.length === 0 && (
         <div className="text-center py-10 text-gray-500">
           No students found.
         </div>

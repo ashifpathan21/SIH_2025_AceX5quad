@@ -19,19 +19,24 @@ import {
   LogOut,
   RefreshCw,
 } from "lucide-react";
-
+import { useNavigate } from 'react-router-dom'
 // Utility function for combining classNames
 const cn = (...classes) => classes.filter(Boolean).join(" ");
 
 // Top Students List Component
 const TopStudentsList = ({ students }) => {
+  const navigate = useNavigate()
+  console.log(students)
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-medium text-gray-900">
           Top Performing Students
         </h4>
-        <button className="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+        <button
+          onClick={() => navigate("/principal/top/students")}
+          className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+        >
           View All
         </button>
       </div>

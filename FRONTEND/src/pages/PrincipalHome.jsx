@@ -201,7 +201,7 @@ const PrincipalHome = () => {
 
           <div className="space-y-6">
             <Card className="p-6">
-              <TopStudentsList students={dashboardData?.topStudents} />
+              <TopStudentsList students={dashboardData?.topStudents?.slice(0 , 5)} />
             </Card>
 
             <Card className="p-6">
