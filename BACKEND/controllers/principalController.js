@@ -235,7 +235,7 @@ export const getPrincipalDashboard = async (req, res) => {
           b.attendancePercentage - a.attendancePercentage ||
           b.totalClassesAttended - a.totalClassesAttended
       )
-      .slice(0, 5);
+      
 
     // Class-wise attendance (today)
     const classAttendance = classes.map((cls) => {
