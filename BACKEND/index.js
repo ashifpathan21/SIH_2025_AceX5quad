@@ -29,7 +29,12 @@ app.use(
 );
 
 app.use(express.json());
+// Middleware: log every request
+app.use((req, res, next) => {
 
+  console.log(`👉 [${req.method}] ===>  https://smartpraveshbackend.onrender.com${req.originalUrl}`);
+  next();
+});
 // ✅ Routes
 app.use("/api/auth/principal", principalRoutes);//done
 app.use("/api/schools", schoolRoutes); //done
@@ -46,3 +51,6 @@ app.get("/", (req, res) => {
 
 // Start server
 app.listen(PORT, () => console.log(`✅ Server is running on port: ${PORT}`));
+
+
+

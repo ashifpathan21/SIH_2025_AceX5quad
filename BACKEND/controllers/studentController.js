@@ -68,6 +68,7 @@ export const createStudent = async (req, res) => {
       student: sanitizeStudent(student),
     });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -252,4 +253,5 @@ export const deleteStudent = async (req, res) => {
     console.error(err.message);
     res.status(500).json({ message: err.message });
   }
+
 };
