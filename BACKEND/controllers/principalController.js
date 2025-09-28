@@ -261,8 +261,7 @@ export const getPrincipalDashboard = async (req, res) => {
       for (const student of cls.students || []) {
         const attendanceRecord = await Attendance.findOne({
           student: student._id,
-          date: today, // Using today's date for current attendance rate per class
-          // You might want to adjust this to calculate for a specific period
+          date: today,
         });
         totalCount++;
         if (attendanceRecord?.status === "present") {

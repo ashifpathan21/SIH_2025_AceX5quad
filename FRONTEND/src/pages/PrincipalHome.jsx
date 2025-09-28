@@ -113,7 +113,7 @@ const PrincipalHome = () => {
   return (
     <div className="min-h-screen w-screen overflow-x-hidden  bg-gray-50">
       <DashboardHeader
-        user={{ name: profile.name }}
+        user={{ name: profile?.name }}
         onLogout={() => {
           localStorage.removeItem("principalToken");
           navigate("/");
@@ -159,7 +159,7 @@ const PrincipalHome = () => {
           <StatCard
             icon={Users}
             title="Total Students"
-            value={dashboardData.stats.totalStudents.toLocaleString()}
+            value={dashboardData?.stats?.totalStudents?.toLocaleString()}
             subtitle="across all classes"
             trend={5.2}
             color="blue"
@@ -167,21 +167,21 @@ const PrincipalHome = () => {
           <StatCard
             icon={BookOpen}
             title="Total Classes"
-            value={dashboardData.stats.totalClasses}
+            value={dashboardData?.stats?.totalClasses}
             subtitle="active classes"
             color="green"
           />
           <StatCard
             icon={UserCheck}
             title="Total Teachers"
-            value={dashboardData.stats.totalTeachers}
+            value={dashboardData?.stats?.totalTeachers}
             subtitle="faculty members"
             color="purple"
           />
           <StatCard
             icon={TrendingUp}
             title="Attendance Rate"
-            value={`${dashboardData.stats.attendanceRate}%`}
+            value={`${dashboardData?.stats?.attendanceRate}%`}
             subtitle="today's average"
             trend={2.1}
             color="orange"
@@ -192,12 +192,12 @@ const PrincipalHome = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             <Card className="p-6">
-              <AttendanceTrendChart data={dashboardData.attendanceTrend} />
+              <AttendanceTrendChart data={dashboardData?.attendanceTrend} />
             </Card>
 
             <Card className="p-6">
               <SimpleBarChart
-                data={dashboardData.classAttendance}
+                data={dashboardData?.classAttendance}
                 title="Today's Class Attendance"
               />
             </Card>
@@ -205,7 +205,7 @@ const PrincipalHome = () => {
 
           <div className="space-y-6">
             <Card className="p-6">
-              <TopStudentsList students={dashboardData.topStudents} />
+              <TopStudentsList students={dashboardData?.topStudents} />
             </Card>
 
             <Card className="p-6">
