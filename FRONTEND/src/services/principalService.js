@@ -64,7 +64,7 @@ export function getPrincipalProfile(token) {
           Authorization: `Bearer ${token}`,
         }
       );
-      console.log(res);
+      //console.log(res);
       dispatch(setPrincipal(res.data.principal || null));
       return res.data;
     } catch (error) {
@@ -88,10 +88,10 @@ export function getDashboard(token) {
           Authorization: `Bearer ${token}`,
         }
       );
-      dispatch(setData(res.data)) ;
+      dispatch(setData(res.data));
       return res.data;
     } catch (error) {
-      console.log(error);
+      //console.log(error);
       toast.error("Failed to fetch dashboard data ");
       return null;
     } finally {

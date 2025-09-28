@@ -22,21 +22,27 @@ export const markAttendance = async (req, res) => {
     const { presentStudents, date } = req.body;
 
     if (!Array.isArray(presentStudents)) {
-      return res.status(400).json({ message: "presentStudents must be an array" });
+      return res
+        .status(400)
+        .json({ message: "presentStudents must be an array" });
     }
 
     // Teacher must be class teacher
     const classId = req.user.classTeacher;
-    console.log(classId)
+    //console.log(classId)
     if (!classId) {
-      return res.status(403).json({ message: "You are not assigned as a class teacher" });
+      return res
+        .status(403)
+        .json({ message: "You are not assigned as a class teacher" });
     }
 
     const cls = await Class.findById(classId);
     if (!cls) return res.status(404).json({ message: "Class not found" });
 
     // Get all students of class
-    const allStudents = await Student.find({ class: classId }).select("-password");
+    const allStudents = await Student.find({ class: classId }).select(
+      "-password"
+    );
     if (!allStudents.length) {
       return res.status(400).json({ message: "No students in this class" });
     }
@@ -55,9 +61,9 @@ export const markAttendance = async (req, res) => {
 
       // Check if student is present
       const isPresent = presentStudents.includes(studentIdStr);
-      console.log(studentIdStr  , "  ==>   " ,  isPresent )
+      //console.log(studentIdStr  , "  ==>   " ,  isPresent )
       const status = isPresent ? "Present" : "Absent";
- console.log(studentIdStr, "  ==>   ", status);
+      //console.log(studentIdStr, "  ==>   ", status);
       // Prevent duplicate attendance
       const existing = await Attendance.findOne({
         student: student._id,
@@ -91,7 +97,9 @@ export const markAttendance = async (req, res) => {
       }
 
       // Update student's attendance array
-      await Student.findByIdAndUpdate(student._id, { $push: { attendance: attendance._id } });
+      await Student.findByIdAndUpdate(student._id, {
+        $push: { attendance: attendance._id },
+      });
 
       attendanceRecords.push(attendance);
     }
@@ -101,11 +109,12 @@ export const markAttendance = async (req, res) => {
       count: attendanceRecords.length,
     });
   } catch (error) {
-    console.error("❌ Error marking attendance:", error);
-    res.status(500).json({ message: "Error marking attendance", error: error.message });
+    //console.error("❌ Error marking attendance:", error);
+    res
+      .status(500)
+      .json({ message: "Error marking attendance", error: error.message });
   }
 };
-
 
 // ✅ Get Attendance by ClassId (principal / teacher only)
 export const getAttendance = async (req, res) => {
@@ -147,7 +156,7 @@ export const getAttendance = async (req, res) => {
       attendance: data,
     });
   } catch (error) {
-    console.error("❌ Error fetching class attendance:", error);
+    //console.error("❌ Error fetching class attendance:", error);
     res.status(500).json({
       success: false,
       message: "Error fetching class attendance",
@@ -178,7 +187,7 @@ export const updateClassTopStudentsController = async (req, res) => {
 
     res.json({ message: "Class top students updated ✅", topStudents: topIds });
   } catch (error) {
-    console.error("❌ Error updating class top students:", error);
+    //console.error("❌ Error updating class top students:", error);
     res.status(500).json({
       message: "Error updating class top students",
       error: error.message,
@@ -211,7 +220,7 @@ export const updateSchoolTopStudentsController = async (req, res) => {
       topStudents: topIds,
     });
   } catch (error) {
-    console.error("❌ Error updating school top students:", error);
+    //console.error("❌ Error updating school top students:", error);
     res.status(500).json({
       message: "Error updating school top students",
       error: error.message,

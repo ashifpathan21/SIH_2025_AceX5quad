@@ -26,14 +26,13 @@ export default function PrincipalProtectedRoutes() {
         await setIsPrincipal(true);
         dispatch(setLoading(false));
       } catch (err) {
-        console.log(err);
+        //console.log(err);
         toast.error(err.message);
         navigate("/");
         return <Navigate to="/" replace />;
       }
     };
-    if(!profile)
-    as();
+    if (!profile) as();
   }, [token]);
 
   // Show nothing or a loader while fetching profile

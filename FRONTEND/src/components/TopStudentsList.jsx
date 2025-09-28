@@ -19,14 +19,14 @@ import {
   LogOut,
   RefreshCw,
 } from "lucide-react";
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
 // Utility function for combining classNames
 const cn = (...classes) => classes.filter(Boolean).join(" ");
 
 // Top Students List Component
 const TopStudentsList = ({ students }) => {
-  const navigate = useNavigate()
-  console.log(students)
+  const navigate = useNavigate();
+  //console.log(students)
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">

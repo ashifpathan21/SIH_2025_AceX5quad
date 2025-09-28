@@ -10,7 +10,7 @@ const SimpleBarChart = ({ data, title, className = "" }) => {
         <h4 className="text-sm font-medium text-gray-900 mb-3">{title}</h4>
       )}
       <div className="space-y-3">
-        {data.map((item, index) => (
+        {data?.map((item, index) => (
           <div key={index} className="flex items-center gap-3">
             {/* Class Name */}
             <div className="w-20 text-sm text-gray-600 font-medium">

@@ -93,7 +93,7 @@ const TeacherModal = ({
       await onSubmit(formData);
       onClose();
     } catch (err) {
-      console.error(err);
+      //console.error(err);
       toast.error("Failed to submit form");
     } finally {
       setLoading(false);

@@ -8,27 +8,27 @@ import Teacher from "../models/teacherModel.js";
 import { config } from "dotenv";
 config();
 
-
-
 // Get Principal Profile from Token
 export const getPrincipalProfile = async (req, res) => {
   try {
     // token is attached in auth middleware, decoded user is in req.user
     const principalId = req.user.id;
-    console.log("working" , principalId)
+    //console.log("working" , principalId)
     const principal = await Principal.findById(principalId)
       .select("-password") // Exclude password
       .populate({
         path: "school",
         populate: {
           path: "classes", // Populate all classes in the school
-          populate:{
-            path:"students teachers classTeacher topStudents"
-          }
+          populate: {
+            path: "students teachers classTeacher topStudents",
+          },
         },
       });
     if (!principal) {
-      return res.status(404).json({ success: false, message: "Principal not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Principal not found" });
     }
 
     res.status(200).json({
@@ -36,11 +36,10 @@ export const getPrincipalProfile = async (req, res) => {
       principal,
     });
   } catch (error) {
-    console.error("Error fetching principal profile:", error);
+    //console.error("Error fetching principal profile:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 
 // ---------------- Govt Creates Principal ----------------
 export const createPrincipal = async (req, res) => {
@@ -96,7 +95,6 @@ export const updatePrincipalProfile = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
 
 export const getPrincipalDashboard = async (req, res) => {
   try {
@@ -234,8 +232,7 @@ export const getPrincipalDashboard = async (req, res) => {
         (a, b) =>
           b.attendancePercentage - a.attendancePercentage ||
           b.totalClassesAttended - a.totalClassesAttended
-      )
-      
+      );
 
     // Class-wise attendance (today)
     const classAttendance = classes.map((cls) => {
@@ -269,7 +266,7 @@ export const getPrincipalDashboard = async (req, res) => {
 
     res.status(200).json(dashboardData);
   } catch (error) {
-    console.error("❌ getPrincipalDashboard error:", error);
+    //console.error("❌ getPrincipalDashboard error:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };

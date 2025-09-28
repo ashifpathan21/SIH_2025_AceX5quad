@@ -21,10 +21,10 @@ export const createStudent = async (req, res) => {
     const { name, rollNumber, password, RFID } = req.body;
     let parentsContact = {};
     parentsContact = JSON.parse(req.body.parentsContact);
-    console.log(parentsContact);
+    //console.log(parentsContact);
     const classId = req.user.classTeacher;
     const schoolId = req.user.school;
-    console.log(classId, schoolId);
+    //console.log(classId, schoolId);
     if (!name || !rollNumber || !password) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -65,7 +65,7 @@ export const createStudent = async (req, res) => {
       student: sanitizeStudent(student),
     });
   } catch (err) {
-    console.log(err);
+    //console.log(err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -142,12 +142,12 @@ export const getStudents = async (req, res) => {
     let students;
 
     if (req.user.role === "principal") {
-      console.log("principal extracting ");
-      console.log(req.user.school);
+      //console.log("principal extracting ");
+      //console.log(req.user.school);
       students = await Student.find({ school: req.user.school })
         .populate("class", "name roomNo")
         .populate("school", "name");
-      console.log(students.length);
+      //console.log(students.length);
     } else if (req.user.role === "teacher") {
       const teacher = await Teacher.findById(req.user.id).populate(
         "assignedClasses.class"
@@ -245,7 +245,7 @@ export const deleteStudent = async (req, res) => {
 
     res.json({ message: "Student deleted successfully" });
   } catch (err) {
-    console.error(err.message);
+    //console.error(err.message);
     res.status(500).json({ message: err.message });
   }
 };

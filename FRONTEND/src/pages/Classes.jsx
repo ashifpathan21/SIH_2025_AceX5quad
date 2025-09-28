@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { Plus, Pencil, House , RefreshCw , Trash2, User } from "lucide-react";
+import { Plus, Pencil, House, RefreshCw, Trash2, User } from "lucide-react";
 import ClassModal from "../components/ClassModal.jsx";
 import {
   getAllClasses,
@@ -13,7 +13,7 @@ import {
 import { getAllTeachers } from "../services/teacherService.js";
 
 const Classes = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { classes, loading } = useSelector((state) => state.classes);
   const { teachers } = useSelector((state) => state.teachers);
@@ -26,7 +26,7 @@ const Classes = () => {
     async function get() {
       await dispatch(getAllClasses(token));
       const t = await dispatch(getAllTeachers(token));
-      console.log("teachers list ", t);
+      //console.log("teachers list ", t);
       setTeachersList(t);
     }
     get();
@@ -46,7 +46,7 @@ const Classes = () => {
       dispatch(deleteClass(id, token));
     }
   };
-  console.log(classes)
+  //console.log(classes)
   return (
     <div className="p-6">
       {/* Header */}

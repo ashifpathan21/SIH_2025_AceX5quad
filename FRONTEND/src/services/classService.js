@@ -36,7 +36,7 @@ export function getAllClasses(token) {
       const res = await apiConnector("GET", classEndpoints.GET_ALL, null, {
         Authorization: `Bearer ${token}`,
       });
-      console.log(res);
+      //console.log(res);
       dispatch(setClasses(res.data || []));
       return res.data;
     } catch (error) {

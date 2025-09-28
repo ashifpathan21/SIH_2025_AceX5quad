@@ -37,20 +37,18 @@ const Teachers = () => {
       const c = await dispatch(getAllClasses(token));
       setClassList(c);
     }
-    get()
+    get();
   }, [token]);
 
   const handleSubmit = (data) => {
     if (editData) {
       dispatch(updateTeacher(editData._id, data, token));
     } else {
-      console.log("creating")
+      //console.log("creating")
       dispatch(createTeacher(data, token));
     }
     setIsOpen(false);
   };
-
-
 
   const handleDelete = (id) => {
     if (window.confirm("Are you sure you want to delete this teacher?")) {

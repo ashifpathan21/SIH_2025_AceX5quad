@@ -104,9 +104,9 @@ export const createTeacher = async (req, res) => {
 export const updateTeacher = async (req, res) => {
   try {
     const { name, email, password, classTeacher } = req.body;
-    let assignedClasses = []
+    let assignedClasses = [];
     const school = req.user.school;
-     
+
     if (req.body.assignedClasses) {
       assignedClasses = JSON.parse(req.body.assignedClasses);
     }
@@ -166,7 +166,6 @@ export const updateTeacher = async (req, res) => {
 
       // add to new
       for (const cls of assignedClasses) {
-      
         const classDoc = await Class.findById(cls.class);
 
         if (
@@ -197,7 +196,7 @@ export const updateTeacher = async (req, res) => {
       teacher: sanitizeTeacher(teacher),
     });
   } catch (err) {
-    console.log(err)
+    //console.log(err)
     res.status(500).json({ message: err.message });
   }
 };

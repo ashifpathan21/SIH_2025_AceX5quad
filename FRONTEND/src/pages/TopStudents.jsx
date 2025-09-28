@@ -15,7 +15,7 @@ const TopStudents = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [activeClass, setActiveClass] = useState("School");
-  console.log(data) 
+  //console.log(data)
   // Fetch dashboard data
   const fetchDashboardData = async () => {
     if (!token) return;
@@ -23,7 +23,7 @@ const TopStudents = () => {
     try {
       await dispatch(getDashboard(token));
     } catch (err) {
-      console.error("Failed to fetch dashboard data", err);
+      //console.error("Failed to fetch dashboard data", err);
     }
     setIsLoading(false);
   };
@@ -46,7 +46,7 @@ const TopStudents = () => {
   const classTabs = ["School", ...Object.keys(groupedByClass)];
   useEffect(() => {
     if (classTabs.length > 0) setActiveClass(classTabs[0]);
-  }, [classTabs]);
+  }, []);
 
   // Students to display based on active class
   const displayedStudents = useMemo(() => {

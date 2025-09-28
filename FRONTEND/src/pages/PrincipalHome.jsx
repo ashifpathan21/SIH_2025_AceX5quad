@@ -21,44 +21,46 @@ import { getDashboard } from "../services/principalService.js";
 const PrincipalHome = () => {
   const [token] = useState(localStorage.getItem("principalToken"));
   const profile = useSelector((state) => state.principal.profile);
-  const data  = useSelector((state) => state.principal.data);
+  const data = useSelector((state) => state.principal.data);
   const navigate = useNavigate();
-  console.log(data)
-  const [dashboardData, setDashboardData] = useState( data || {
-    stats: {
-      totalStudents: 0,
-      totalClasses: 0,
-      totalTeachers: 0,
-      attendanceRate: 0,
-    },
-    attendanceTrend: [],
-    topStudents: [],
-    classAttendance: [],
-    recentActivities: [],
-  });
+  //console.log(data)
+  const [dashboardData, setDashboardData] = useState(
+    data || {
+      stats: {
+        totalStudents: 0,
+        totalClasses: 0,
+        totalTeachers: 0,
+        attendanceRate: 0,
+      },
+      attendanceTrend: [],
+      topStudents: [],
+      classAttendance: [],
+      recentActivities: [],
+    }
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const dispatch = useDispatch();
 
   // Fetch dashboard data
   const fetchData = async () => {
-    if (!token || data ) return;
+    if (!token || data) return;
     try {
       const res = await dispatch(getDashboard(token));
       setDashboardData(res);
     } catch (err) {
       setError("Failed to fetch dashboard data");
-      console.error(err);
+      //console.error(err);
     }
   };
   const fetchDashboardData = async () => {
-    if (!token  ) return;
+    if (!token) return;
     try {
       const res = await dispatch(getDashboard(token));
       setDashboardData(res);
     } catch (err) {
       setError("Failed to fetch dashboard data");
-      console.error(err);
+      //console.error(err);
     }
   };
 
@@ -70,11 +72,10 @@ const PrincipalHome = () => {
       navigate("/principal/classes");
     } else if (actionId === "assign-teacher") {
       navigate("/principal/teachers");
+    } else if (actionId === "view-attendance") {
+      navigate("/principal/attendance");
     }
-     else if (actionId === "view-attendance") {
-       navigate("/principal/attendance");
-     }
-    console.log("Quick action clicked:", actionId);
+    //console.log("Quick action clicked:", actionId);
   };
 
   // Handle refresh
@@ -91,8 +92,9 @@ const PrincipalHome = () => {
 
   // Load data on component mount
   useEffect(() => {
-    if(!data || !dashboardData)
-  { handleOpen()}
+    if (!data || !dashboardData) {
+      handleOpen();
+    }
   }, []);
 
   if (isLoading) {
@@ -217,7 +219,9 @@ const PrincipalHome = () => {
 
           <div className="space-y-6">
             <Card className="p-6">
-              <TopStudentsList students={dashboardData?.topStudents?.slice(0 , 5)} />
+              <TopStudentsList
+                students={dashboardData?.topStudents?.slice(0, 5)}
+              />
             </Card>
 
             <Card className="p-6">

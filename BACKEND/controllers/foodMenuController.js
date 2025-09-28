@@ -16,7 +16,7 @@ const translateToHindi = async (items) => {
     const translated = result.response.text().trim();
     return translated.split(",").map((item) => item.trim());
   } catch (err) {
-    console.error("❌ Translation failed:", err);
+    //console.error("❌ Translation failed:", err);
     return items; // fallback if Gemini fails
   }
 };
@@ -68,7 +68,7 @@ export const createFoodMenu = async (req, res) => {
 
     res.json({ message: "Menu created & SMS sent ✅", menu });
   } catch (err) {
-    console.error("❌ Error creating menu:", err);
+    //console.error("❌ Error creating menu:", err);
     res
       .status(500)
       .json({ message: "Error creating menu", error: err.message });
@@ -83,7 +83,7 @@ export const getFoodMenu = async (req, res) => {
     });
     res.json(menus);
   } catch (err) {
-    console.error("❌ Error fetching menu:", err);
+    //console.error("❌ Error fetching menu:", err);
     res
       .status(500)
       .json({ message: "Error fetching menu", error: err.message });
@@ -109,7 +109,7 @@ export const deleteFoodMenu = async (req, res) => {
     await FoodMenu.findByIdAndDelete(req.params.id);
     res.json({ message: "Menu deleted ✅" });
   } catch (err) {
-    console.error("❌ Error deleting menu:", err);
+    //console.error("❌ Error deleting menu:", err);
     res
       .status(500)
       .json({ message: "Error deleting menu", error: err.message });
