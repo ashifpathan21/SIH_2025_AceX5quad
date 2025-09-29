@@ -272,6 +272,7 @@ export const getTeacher = async (req, res) => {
 
 export const getTeacherHomeData = async (req, res) => {
   try {
+    console.log("here")
     const teacherId = req.user.id;
 
     // 1. Find teacher and populate classTeacher

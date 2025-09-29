@@ -97,7 +97,9 @@ const PrincipalLogin = () => {
       const res = await dispatch(
         loginPrincipal({ email: formData.email, password: formData.password })
       );
+      if(res)
       navigate("/principal/home");
+    
     } catch (error) {
       setApiError(error.message);
     }

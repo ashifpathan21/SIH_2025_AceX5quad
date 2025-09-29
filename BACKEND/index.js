@@ -17,8 +17,16 @@ connect();
 
 const PORT = process.env.PORT || 4000;
 const app = express();
-// Apply CORS middleware
-app.use(cors());
+
+
+app.use(
+  cors({
+    origin: true, // sab origin allow
+    credentials: true, // cookies/auth headers allow
+  })
+);
+
+app.use(express.json());
 
 
 
@@ -89,10 +97,7 @@ app.get("/api/info", (req, res) => {
       attendance: "/api/attendance",
       foodMenu: "/api/foodmenu",
     },
-    cors: {
-      enabled: true,
-      allowed_origins: allowedOrigins,
-    },
+   
   });
 });
 

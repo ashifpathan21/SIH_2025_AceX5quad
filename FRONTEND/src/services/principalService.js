@@ -32,6 +32,7 @@ export function loginPrincipal(data) {
   return async (dispatch) => {
     dispatch(setLoading(true));
     try {
+      console.log(data)
       const res = await apiConnector("POST", principalEndpoints.LOGIN, data);
       toast.success("Login successful");
       dispatch(setPrincipal(res.data.principal || null));

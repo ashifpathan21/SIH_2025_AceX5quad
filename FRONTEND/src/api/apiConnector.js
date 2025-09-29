@@ -1,14 +1,19 @@
-import axios from "axios"
+import axios from "axios";
 
-export const axiosInstance = axios.create({});
+const axiosInstance = axios.create({});
 
-export const apiConnector = (method, url, bodyData, headers, params) => {
-   
-    return axiosInstance({
-        method:`${method}`,
-        url:`${url}`,
-        data: bodyData ? bodyData : null,
-        headers: headers ? headers: null,
-        params: params ? params : null,
+export const apiConnector = async (method, url, bodyData, headers, params) => {
+  try {
+    const response = await axiosInstance({
+      method: method.toLowerCase(),
+      url,
+      data: bodyData,
+      headers: headers || {},
+      params,
     });
-}
+    return response;
+  } catch (error) {
+    console.error("API Error:", error.response?.data || error.message);
+    throw error; // Let the caller handle it
+  }
+};

@@ -16,6 +16,7 @@ const generateToken = (id, role, school, classTeacher) => {
 // ---------------- Principal ----------------
 export const principalLogin = async (req, res) => {
   try {
+    console.log(req.body)
     const { email, password } = req.body;
     const principal = await Principal.findOne({ email }).populate({
       path: "school",
@@ -34,10 +35,10 @@ export const principalLogin = async (req, res) => {
     if (!isMatch)
       return res.status(401).json({ message: "Invalid credentials" });
 
-    const token = generateToken(principal._id, "principal", principal?.school);
+    const token = generateToken(principal._id, "principal", principal?.school?._id);
     let update = principal;
     update.password = null;
-    res.json({ token, role: "principal", principal: update });
+    res.json({ token, role: "principal", principal: update }).success(true);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -65,8 +66,8 @@ export const teacherLogin = async (req, res) => {
     const token = generateToken(
       teacher._id,
       "teacher",
-      teacher?.school,
-      teacher?.classTeacher
+      teacher?.school?._id,
+      teacher?.classTeacher?._id
     );
     let updateTeacher = teacher;
     updateTeacher.password = null;
