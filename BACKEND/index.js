@@ -3,7 +3,7 @@ import { config } from "dotenv";
 import cors from "cors";
 import { connect } from "./utils/db.js";
 
-// 🛣️ Routes
+// Routes imports...
 import attendanceRoutes from "./routes/attendanceRoutes.js";
 import classRoutes from "./routes/classRoutes.js";
 import schoolRoutes from "./routes/schoolRoutes.js";
@@ -18,10 +18,14 @@ connect();
 const PORT = process.env.PORT || 4000;
 const app = express();
 
-// ✅ CORS setup - Allow all origins for public API access
+// ✅ CORS Configuration
 app.use(
   cors({
-    origin: true, // Allow all origins
+    origin: [
+      "https://smartpravesh.onrender.com",
+      "http://localhost:3000",
+      "http://localhost:5173",
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: [
@@ -30,20 +34,21 @@ app.use(
       "X-Requested-With",
       "Accept",
       "Origin",
+      "Access-Control-Allow-Origin",
     ],
+    exposedHeaders: ["set-cookie"],
+    maxAge: 86400, // 24 hours
   })
 );
 
-// Handle preflight requests for all routes
-app.options("*", cors());
-
-app.use(express.json());
+// Increase payload limit
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Middleware: log every request
 app.use((req, res, next) => {
-  console.log(
-    `👉 [${req.method}] ===>  https://smartpraveshbackend.onrender.com${req.originalUrl}`
-  );
+  console.log(`👉 [${req.method}] ${req.originalUrl}`);
+  console.log(`📨 Headers:`, req.headers);
   next();
 });
 
@@ -60,45 +65,50 @@ app.use("/api/attendance", attendanceRoutes);
 app.get("/", (req, res) => {
   res.json({
     message: "🚀 Automated Attendance System API is running...",
-    status: "active",
+    cors: "enabled",
     timestamp: new Date().toISOString(),
   });
 });
 
-// Health check endpoint
+// Health check
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "OK",
-    message: "Server is healthy",
+    cors: "enabled",
     timestamp: new Date().toISOString(),
   });
 });
 
-// Handle 404 errors
-app.use((req, res) => {
-  res.status(404).json({
-    error: "Endpoint not found",
-    message: `The requested endpoint ${req.method} ${req.path} was not found`,
+// Test CORS endpoint
+app.get("/api/test-cors", (req, res) => {
+  res.json({
+    message: "CORS is working!",
+    origin: req.headers.origin,
+    timestamp: new Date().toISOString(),
   });
 });
 
-// Error handling middleware
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    error: "Endpoint not found",
+    path: req.path,
+  });
+});
+
+// Error handler
 app.use((error, req, res, next) => {
   console.error("🚨 Error:", error);
   res.status(500).json({
     error: "Internal server error",
-    message:
-      process.env.NODE_ENV === "production"
-        ? "Something went wrong!"
-        : error.message,
+    message: error.message,
   });
 });
 
-// Start server
 app.listen(PORT, () => {
-  console.log(`✅ Server is running on port: ${PORT}`);
-  console.log(`🌐 API accessible from any domain`);
-  console.log(
-    `🔗 Health check: https://smartpraveshbackend.onrender.com/health`
-  );
+  console.log(`✅ Server running on port: ${PORT}`);
+  console.log(`🌐 CORS enabled for:`);
+  console.log(`   - https://smartpravesh.onrender.com`);
+  console.log(`   - http://localhost:3000`);
+  console.log(`   - http://localhost:5173`);
 });
