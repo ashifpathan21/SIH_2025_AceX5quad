@@ -32,7 +32,7 @@ app.use(
 );
 
 // Handle preflight requests (OPTIONS)
-app.options("/*", cors());
+app.options("/.*/", cors());
 
 app.use(express.json());
 
