@@ -154,6 +154,9 @@ const Attendance = () => {
                     Status
                   </th>
                   <th className="border border-gray-200 px-4 py-2 text-center">
+                    Marked By
+                  </th>
+                  <th className="border border-gray-200 px-4 py-2 text-center">
                     Date
                   </th>
                 </tr>
@@ -206,6 +209,9 @@ const Attendance = () => {
                       >
                         {record.status}
                       </span>
+                    </td>
+                    <td className="border capitalize border-gray-200 px-4 py-2 text-sm text-gray-600">
+                      {record.markedBy?.name}
                     </td>
                     <td className="border border-gray-200 px-4 py-2 text-center text-sm text-gray-500">
                       {(() => {

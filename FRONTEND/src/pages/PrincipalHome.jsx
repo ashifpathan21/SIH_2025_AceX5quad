@@ -23,7 +23,7 @@ const PrincipalHome = () => {
   const profile = useSelector((state) => state.principal.profile);
   const data = useSelector((state) => state.principal.data);
   const navigate = useNavigate();
-    console.log(data)
+  console.log(data);
   const [dashboardData, setDashboardData] = useState(
     data || {
       stats: {
@@ -247,7 +247,10 @@ const PrincipalHome = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
             <Card className="p-6">
-              <AttendanceTrendChart data={dashboardData?.attendanceTrend} />
+              <AttendanceTrendChart
+                totalStudents={dashboardData?.stats?.totalStudents?.toLocaleString()}
+                data={dashboardData?.attendanceTrend}
+              />
             </Card>
 
             <Card className="p-6">

@@ -9,7 +9,8 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const AttendanceTrendChart = ({ data }) => {
+const AttendanceTrendChart = ({ data, totalStudents }) => {
+  console.log(totalStudents)
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -28,7 +29,11 @@ const AttendanceTrendChart = ({ data }) => {
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis dataKey="date" tick={{ fontSize: 12 }} />
             <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
-            <Tooltip formatter={(val) => `${val}%`} />
+            <Tooltip
+              formatter={(val) =>
+                `${val}% ${Math.round((val / 100) * totalStudents)} students`
+              }
+            />
             <Line
               type="monotone"
               dataKey="rate"
