@@ -19,7 +19,7 @@ import { getDashboard } from "../services/principalService.js";
 
 // Main PrincipalHome Component
 const PrincipalHome = () => {
-  const [token] = useState(localStorage.getItem("principalToken"));
+  const token = localStorage.getItem("principalToken")
   const profile = useSelector((state) => state.principal.profile);
   const data = useSelector((state) => state.principal.data);
   const navigate = useNavigate();
