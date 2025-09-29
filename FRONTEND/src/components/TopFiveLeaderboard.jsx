@@ -104,7 +104,7 @@ const TopFiveLeaderboard = ({ leaderboard = [] }) => {
               {student.name}
             </h3>
             <p className="text-xs text-gray-600 font-medium">
-              Class {student.class}
+               {student.class}
             </p>
 
             {/* Attendance Progress */}
