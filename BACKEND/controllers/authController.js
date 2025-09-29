@@ -51,7 +51,9 @@ export const teacherLogin = async (req, res) => {
     const { email, password } = req.body;
     const teacher = await Teacher.findOne({ email });
 
-    if (!teacher) return res.status(404).json({ message: "Teacher not found" });
+    if (!teacher) return res.status(404).json({ message: "Teacher not found" }).populate("school") // populate school details
+  .populate("classTeacher") // populate class teacher details
+  .populate("assignedClasses.class"); 
 
     const isMatch = await bcrypt.compare(password, teacher.password);
     if (!isMatch)
@@ -85,3 +87,4 @@ export const studentLogin = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
