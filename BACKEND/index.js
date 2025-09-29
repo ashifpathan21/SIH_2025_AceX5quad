@@ -21,17 +21,10 @@ const app = express();
 // ✅ CORS setup (open for all with credentials)
 app.use(
   cors({
-    origin: (origin, callback) => {
-      callback(null, origin || true); // allow every origin dynamically
-    },
+    origin: ["https://smartpravesh.onrender.com", "http://localhost:5173"],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   })
 );
-
-// ✅ Fix for preflight
-app.options("/*", cors());
 
 app.use(express.json());
 
