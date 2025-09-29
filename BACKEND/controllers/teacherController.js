@@ -2,6 +2,8 @@ import bcrypt from "bcrypt";
 import Teacher from "../models/teacherModel.js";
 import Class from "../models/classModel.js";
 import School from "../models/schoolModel.js";
+import Student from "../models/studentModel.js";
+import Attendance from "../models/attendanceModel.js";
 import {
   uploadToCloudinary,
   deleteFromCloudinary,
@@ -264,5 +266,162 @@ export const getTeacher = async (req, res) => {
     res.json(sanitizeTeacher(teacher));
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+};
+
+
+export const getTeacherHomeData = async (req, res) => {
+  try {
+    const teacherId = req.user.id;
+
+    // 1. Find teacher and populate classTeacher
+    const teacher = await Teacher.findById(teacherId)
+      .populate("school")
+      .populate({
+        path: "classTeacher",
+        populate: { path: "students", select: "name image rollNumber" },
+      });
+
+    if (!teacher) return res.status(404).json({ message: "Teacher not found" });
+    if (!teacher.classTeacher)
+      return res
+        .status(404)
+        .json({ message: "No assigned class for this teacher" });
+
+    const classInfo = teacher.classTeacher;
+    const students = classInfo.students || [];
+    const studentIds = students.map((s) => s._id);
+
+    // 2. Fetch attendance for students in this class
+    const today = new Date();
+    const todayStart = new Date(today);
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(today);
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const PERIOD_DAYS = 7;
+    const rangeStart = new Date(todayStart);
+    rangeStart.setDate(rangeStart.getDate() - (PERIOD_DAYS - 1));
+
+    const attendanceRecords = await Attendance.find({
+      student: { $in: studentIds },
+      class: classInfo._id,
+      date: { $gte: rangeStart, $lte: todayEnd },
+    }).lean();
+
+    // 3. Prepare stats
+    const perDatePresent = new Map();
+    const perStudentStats = new Map();
+
+    const toDateKey = (d) => new Date(d).toISOString().split("T")[0];
+    const todayKey = toDateKey(todayStart);
+
+    for (const st of students) {
+      perStudentStats.set(st._id.toString(), {
+        name: st.name,
+        image: st.image,
+        presentCount: 0,
+        recordCount: 0,
+      });
+    }
+
+    for (const rec of attendanceRecords) {
+      const sid = rec.student.toString();
+      const dateKey = toDateKey(rec.date);
+
+      if (!perDatePresent.has(dateKey)) perDatePresent.set(dateKey, new Set());
+      if (rec.status === "Present") perDatePresent.get(dateKey).add(sid);
+
+      if (perStudentStats.has(sid)) {
+        const stats = perStudentStats.get(sid);
+        stats.recordCount++;
+        if (rec.status === "Present") stats.presentCount++;
+      }
+    }
+
+    // Today's attendance rate
+    const presentToday = (perDatePresent.get(todayKey) || new Set()).size;
+    const totalStudents = students.length;
+    const attendanceRate =
+      totalStudents > 0 ? Math.round((presentToday / totalStudents) * 100) : 0;
+
+    // Attendance trend
+    const attendanceTrend = [];
+    for (let i = PERIOD_DAYS - 1; i >= 0; i--) {
+      const d = new Date(todayStart);
+      d.setDate(d.getDate() - i);
+      const key = toDateKey(d);
+      const presentCount = (perDatePresent.get(key) || new Set()).size;
+      const rate =
+        totalStudents > 0
+          ? Math.round((presentCount / totalStudents) * 100)
+          : 0;
+      attendanceTrend.push({
+        date: key,
+        present: presentCount,
+        total: totalStudents,
+        rate,
+      });
+    }
+
+    // Top students
+    const topStudents = Array.from(perStudentStats.entries())
+      .map(([id, stats]) => ({
+        id,
+        name: stats.name,
+        image: stats.image,
+        totalClassesAttended: stats.presentCount,
+        totalClasses: stats.recordCount,
+        attendancePercentage: stats.recordCount
+          ? Math.round((stats.presentCount / stats.recordCount) * 100)
+          : 0,
+      }))
+      .sort(
+        (a, b) =>
+          b.attendancePercentage - a.attendancePercentage ||
+          b.totalClassesAttended - a.totalClassesAttended
+      )
+      .slice(0, 5); // Top 5
+
+    // Final response
+    const dashboardData = {
+      teacher: {
+        id: teacher._id,
+        name: teacher.name,
+        email: teacher.email,
+        image: teacher.image,
+        school: teacher.school,
+      },
+      classInfo: {
+        id: classInfo._id,
+        name: classInfo.name,
+        totalStudents,
+      },
+      stats: {
+        totalStudents,
+        attendanceRate,
+      },
+      attendanceTrend,
+      topStudents,
+      students: students.map((st) => {
+        const stats = perStudentStats.get(st._id.toString());
+        return {
+          ...st,
+          attendanceStats: {
+            totalDays: stats.recordCount,
+            presentDays: stats.presentCount,
+            absentDays: stats.recordCount - stats.presentCount,
+            percentage: stats.recordCount
+              ? Math.round((stats.presentCount / stats.recordCount) * 100)
+              : 0,
+          },
+        };
+      }),
+    };
+
+    res.status(200).json(dashboardData);
+  } catch (error) {
+    console.error("❌ getTeacherHomeData error:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };

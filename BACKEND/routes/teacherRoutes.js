@@ -7,6 +7,7 @@ import {
   getTeacher,
   updateTeacher,
   deleteTeacher,
+  getTeacherHomeData,
 } from "../controllers/teacherController.js";
 
 import {
@@ -31,6 +32,7 @@ router.post(
 
 // ✅ Get all teachers (principal only for management)
 router.get("/getAll", authMiddleware, isPrincipal, getTeachers);
+router.get("/getData", authMiddleware, isTeacher , getTeacherHomeData);
 
 // ✅ Get one teacher by ID (principal or teacher self)
 router.get("/get/:id", authMiddleware, getTeacher);
