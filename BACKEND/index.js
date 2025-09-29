@@ -18,21 +18,24 @@ connect();
 const PORT = process.env.PORT || 4000;
 const app = express();
 
-// ✅ CORS setup (open for all with credentials)
+// ✅ CORS setup - Allow all origins for public API access
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // अगर request बिना origin के आए (जैसे Postman) तो भी allow कर दो
-      callback(null, origin || true);
-    },
+    origin: true, // Allow all origins
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+      "Origin",
+    ],
   })
 );
 
-// Handle preflight requests (OPTIONS)
-app.options("/.*/", cors());
+// Handle preflight requests for all routes
+app.options("*", cors());
 
 app.use(express.json());
 
@@ -45,18 +48,57 @@ app.use((req, res, next) => {
 });
 
 // ✅ Routes
-app.use("/api/auth/principal", principalRoutes); //done
-app.use("/api/schools", schoolRoutes); //done
-app.use("/api/classes", classRoutes); //done
-app.use("/api/teachers", teacherRoutes); //done
-app.use("/api/students", studentRoutes); //done
-app.use("/api/foodmenu", foodMenuRoutes); //done
+app.use("/api/auth/principal", principalRoutes);
+app.use("/api/schools", schoolRoutes);
+app.use("/api/classes", classRoutes);
+app.use("/api/teachers", teacherRoutes);
+app.use("/api/students", studentRoutes);
+app.use("/api/foodmenu", foodMenuRoutes);
 app.use("/api/attendance", attendanceRoutes);
 
 // Default route
 app.get("/", (req, res) => {
-  res.send("🚀 Automated Attendance System API is running...");
+  res.json({
+    message: "🚀 Automated Attendance System API is running...",
+    status: "active",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    message: "Server is healthy",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Handle 404 errors
+app.use((req, res) => {
+  res.status(404).json({
+    error: "Endpoint not found",
+    message: `The requested endpoint ${req.method} ${req.path} was not found`,
+  });
+});
+
+// Error handling middleware
+app.use((error, req, res, next) => {
+  console.error("🚨 Error:", error);
+  res.status(500).json({
+    error: "Internal server error",
+    message:
+      process.env.NODE_ENV === "production"
+        ? "Something went wrong!"
+        : error.message,
+  });
 });
 
 // Start server
-app.listen(PORT, () => console.log(`✅ Server is running on port: ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`✅ Server is running on port: ${PORT}`);
+  console.log(`🌐 API accessible from any domain`);
+  console.log(
+    `🔗 Health check: https://smartpraveshbackend.onrender.com/health`
+  );
+});
