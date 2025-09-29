@@ -143,8 +143,6 @@ app.use((error, req, res, next) => {
 // Start server with 0.0.0.0 binding for Render
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Server running on port: ${PORT}`);
-  console.log(`🌐 CORS enabled for: ${allowedOrigins.join(", ")}`);
-  console.log(`📱 APK support: ENABLED`);
   console.log(
     `🔗 Health check: https://smartpraveshbackend.onrender.com/health`
   );
