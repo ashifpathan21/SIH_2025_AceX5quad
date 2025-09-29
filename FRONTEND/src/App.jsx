@@ -4,6 +4,7 @@ import PrincipalLogin from "./pages/PrincipalLogin";
 import PrincipalHome from "./pages/PrincipalHome";
 import PrincipalProtectedRoutes from "./routes/PrincipalProtectedRoutes";
 import Students from './pages/Students.jsx'
+import StudentsTable from "./pages/StudentsTable.jsx";
 import Classes from "./pages/Classes.jsx";
 import Teachers from "./pages/Teachers.jsx";
 import Attendance from "./pages/Attendance.jsx";
@@ -16,7 +17,7 @@ export default function App() {
 
         <Route element={<PrincipalProtectedRoutes />}>
           <Route path="/principal/home" element={<PrincipalHome />} />
-          <Route path="/principal/students" element={<Students />} />
+          <Route path="/principal/students" element={<StudentsTable />} />
           <Route path="/principal/top/students" element={<TopStudents />} />
           <Route path="/principal/classes" element={<Classes />} />
           <Route path="/principal/teachers" element={<Teachers />} />

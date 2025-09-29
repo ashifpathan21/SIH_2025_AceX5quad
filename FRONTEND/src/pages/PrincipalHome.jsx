@@ -23,7 +23,7 @@ const PrincipalHome = () => {
   const profile = useSelector((state) => state.principal.profile);
   const data = useSelector((state) => state.principal.data);
   const navigate = useNavigate();
-  //console.log(data)
+    console.log(data)
   const [dashboardData, setDashboardData] = useState(
     data || {
       stats: {
@@ -168,14 +168,29 @@ const PrincipalHome = () => {
           </div>
         </div>
 
+        <div className="mb-5 ">
+          <Card className="p-6">
+            <div className="mb-4">
+              <h4 className="text-sm font-medium text-gray-900">
+                Quick Actions
+              </h4>
+            </div>
+            <QuickActions onActionClick={handleQuickAction} />
+          </Card>
+        </div>
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
           <StatCard
             icon={Users}
             title="Total Students"
             value={dashboardData?.stats?.totalStudents?.toLocaleString()}
             subtitle="across all classes"
-            trend={5.2}
+            trend={
+              dashboardData?.attendanceTrend?.length > 1
+                ? dashboardData.attendanceTrend.at(-1).rate -
+                  dashboardData.attendanceTrend.at(-2).rate
+                : 0
+            }
             color="blue"
           />
           <StatCard
@@ -194,11 +209,37 @@ const PrincipalHome = () => {
           />
           <StatCard
             icon={TrendingUp}
-            title="Attendance Rate"
+            title="Today's Attendance Rate"
             value={`${dashboardData?.stats?.attendanceRate}%`}
             subtitle="today's average"
-            trend={2.1}
+            trend={
+              dashboardData?.attendanceTrend?.length > 1
+                ? dashboardData.attendanceTrend.at(-1).rate -
+                  dashboardData.attendanceTrend.at(-2).rate
+                : 0
+            }
             color="orange"
+          />
+          {/* ✅ New StatCard for total present students */}
+          <StatCard
+            icon={Users}
+            title="Present Students Today"
+            value={Math.round(
+              (dashboardData?.stats?.attendanceRate / 100) *
+                dashboardData?.stats?.totalStudents
+            )}
+            subtitle="currently in school"
+            trend={
+              dashboardData?.attendanceTrend?.length > 1
+                ? Math.round(
+                    ((dashboardData.attendanceTrend.at(-1).rate -
+                      dashboardData.attendanceTrend.at(-2).rate) /
+                      100) *
+                      dashboardData.stats.totalStudents
+                  )
+                : 0
+            }
+            color="teal"
           />
         </div>
 
@@ -222,15 +263,6 @@ const PrincipalHome = () => {
               <TopStudentsList
                 students={dashboardData?.topStudents?.slice(0, 5)}
               />
-            </Card>
-
-            <Card className="p-6">
-              <div className="mb-4">
-                <h4 className="text-sm font-medium text-gray-900">
-                  Quick Actions
-                </h4>
-              </div>
-              <QuickActions onActionClick={handleQuickAction} />
             </Card>
           </div>
         </div>

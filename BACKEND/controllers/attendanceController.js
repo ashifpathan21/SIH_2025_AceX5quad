@@ -147,7 +147,7 @@ export const getAttendance = async (req, res) => {
 
     // Query attendance
     const data = await Attendance.find(filter)
-      .populate("student", "name email image")
+      .populate("student", "name rollNumber parentsContact image")
       .populate("class", "name roomNo")
       .populate("markedBy", "name email");
 

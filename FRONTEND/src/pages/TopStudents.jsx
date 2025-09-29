@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { motion } from "framer-motion";
 import { getDashboard } from "../services/principalService.js";
-import { Plus, Pencil, House, RefreshCw, Trash2, User } from "lucide-react";
+import { House, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import TopFiveLeaderboard from "../components/TopFiveLeaderboard.jsx";
 
@@ -15,7 +15,7 @@ const TopStudents = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [activeClass, setActiveClass] = useState("School");
-  //console.log(data)
+
   // Fetch dashboard data
   const fetchDashboardData = async () => {
     if (!token) return;
@@ -59,18 +59,7 @@ const TopStudents = () => {
     return list;
   }, [activeClass, topStudents, groupedByClass]);
 
-  // Global rank map
-  const globalRankMap = useMemo(() => {
-    const sorted = [...topStudents].sort(
-      (a, b) => b.attendancePercentage - a.attendancePercentage
-    );
-    const map = {};
-    sorted.forEach((student, index) => {
-      map[student._id] = index + 1;
-    });
-    return map;
-  }, [topStudents]);
-
+ 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -137,7 +126,7 @@ const TopStudents = () => {
           >
             {/* Rank */}
             <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-              {globalRankMap[student._id]}
+              {index+6}
             </div>
 
             {/* Image */}
