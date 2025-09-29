@@ -21,7 +21,7 @@ const app = express();
 // ✅ CORS setup (open for all with credentials)
 app.use(
   cors({
-    origin: ["https://smartpravesh.onrender.com", "http://localhost:5173"],
+    origin: ["https://smartpravesh.onrender.com", "http://localhost:5173"  , "*"],
     credentials: true,
   })
 );
