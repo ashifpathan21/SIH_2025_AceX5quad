@@ -18,7 +18,7 @@ connect();
 const PORT = process.env.PORT || 4000;
 const app = express();
 
-// ✅ CORS (open for all with credentials)
+// ✅ CORS setup (open for all with credentials)
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -30,8 +30,8 @@ app.use(
   })
 );
 
-// Handle preflight requests
-app.options("*", cors());
+// ✅ Fix for preflight
+app.options("/*", cors());
 
 app.use(express.json());
 
