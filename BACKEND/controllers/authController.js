@@ -3,16 +3,14 @@ import jwt from "jsonwebtoken";
 import Principal from "../models/principalModel.js";
 import Teacher from "../models/teacherModel.js";
 import Student from "../models/studentModel.js";
-import {config } from "dotenv" ;
-config() 
-
-
-
-
+import { config } from "dotenv";
+config();
 
 // 🔑 Utility for token
-const generateToken = (id, role , school , classTeacher) => {
-  return jwt.sign({ id, role , school , classTeacher}, process.env.JWT_SECRET, { expiresIn: "1d" });
+const generateToken = (id, role, school, classTeacher) => {
+  return jwt.sign({ id, role, school, classTeacher }, process.env.JWT_SECRET, {
+    expiresIn: "1d",
+  });
 };
 
 // ---------------- Principal ----------------
@@ -36,10 +34,10 @@ export const principalLogin = async (req, res) => {
     if (!isMatch)
       return res.status(401).json({ message: "Invalid credentials" });
 
-    const token = generateToken(principal._id, "principal" , principal?.school);
-    let update = principal ;
-    update.password = null 
-    res.json({ token, role: "principal", principal:update  });
+    const token = generateToken(principal._id, "principal", principal?.school);
+    let update = principal;
+    update.password = null;
+    res.json({ token, role: "principal", principal: update });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -49,20 +47,30 @@ export const principalLogin = async (req, res) => {
 export const teacherLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const teacher = await Teacher.findOne({ email });
+    const teacher = await Teacher.findOne({ email })
+      .populate("school") // populate school details
+      .populate("classTeacher") // populate class teacher details
+      .populate("assignedClasses.class");
 
-    if (!teacher) return res.status(404).json({ message: "Teacher not found" }).populate("school") // populate school details
-  .populate("classTeacher") // populate class teacher details
-  .populate("assignedClasses.class"); 
+    if (!teacher)
+      return res
+        .status(404)
+        .json({ message: "Teacher not found" })
+      
 
     const isMatch = await bcrypt.compare(password, teacher.password);
     if (!isMatch)
       return res.status(401).json({ message: "Invalid credentials" });
-    
-    const token = generateToken(teacher._id, "teacher" , teacher?.school , teacher?.classTeacher);
-    let updateTeacher = teacher 
-    updateTeacher.password = null ;
-    res.json({ token, role: "teacher", teacher:updateTeacher });
+
+    const token = generateToken(
+      teacher._id,
+      "teacher",
+      teacher?.school,
+      teacher?.classTeacher
+    );
+    let updateTeacher = teacher;
+    updateTeacher.password = null;
+    res.json({ token, role: "teacher", teacher: updateTeacher });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -79,12 +87,11 @@ export const studentLogin = async (req, res) => {
     if (!isMatch)
       return res.status(401).json({ message: "Invalid credentials" });
 
-    const token = generateToken(student._id, "student" , student?.school );
-    let update = student 
-    update.password = null 
-    res.json({ token, role: "student", student:update });
+    const token = generateToken(student._id, "student", student?.school);
+    let update = student;
+    update.password = null;
+    res.json({ token, role: "student", student: update });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
-
