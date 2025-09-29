@@ -17,90 +17,10 @@ connect();
 
 const PORT = process.env.PORT || 4000;
 const app = express();
-
-// ✅ COMPREHENSIVE CORS Configuration for Web & APK
-const allowedOrigins = [
-  "https://smartpravesh.onrender.com",
-  "https://smartpravesh.onrender.com/principal/home",
-  "http://localhost:3000",
-  "http://localhost:5173",
-  "http://localhost:19006", // React Native development
-  "http://10.0.2.2:4000", // Android emulator
-  "exp://localhost:19000", // Expo
-  "http://localhost", // APK fallback
-  "file://", // APK file protocol
-  "capacitor://localhost", // Capacitor
-  "ionic://localhost", // Ionic
-];
-
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, postman)
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      // Log unknown origins but allow them (for APK flexibility)
-      console.log(`🌐 Allowed origin: ${origin}`);
-      callback(null, true);
-
-      // If you want to be strict, use this instead:
-      // callback(new Error(`CORS not allowed for origin: ${origin}`));
-    }
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "Accept",
-    "X-Requested-With",
-    "Origin",
-    "Access-Control-Request-Headers",
-    "Access-Control-Request-Method",
-  ],
-  exposedHeaders: ["Authorization", "Set-Cookie"],
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
-};
-
 // Apply CORS middleware
-app.use(cors(corsOptions));
+app.use(cors());
 
-// Handle preflight requests properly
-app.options("*", (req, res) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.header(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
-  );
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, Accept, X-Requested-With, Origin"
-  );
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Max-Age", "86400"); // 24 hours
-  res.status(204).send();
-});
 
-// Body parsing middleware with increased limits
-app.use(
-  express.json({
-    limit: "50mb",
-    verify: (req, res, buf) => {
-      req.rawBody = buf;
-    },
-  })
-);
-
-app.use(
-  express.urlencoded({
-    extended: true,
-    limit: "50mb",
-    parameterLimit: 100000,
-  })
-);
 
 // Request logging middleware
 app.use((req, res, next) => {
