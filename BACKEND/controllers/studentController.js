@@ -21,10 +21,10 @@ export const createStudent = async (req, res) => {
     const { name, rollNumber, password, RFID } = req.body;
     let parentsContact = {};
     parentsContact = JSON.parse(req.body.parentsContact);
-    //console.log(parentsContact);
+    console.log(parentsContact);
     const classId = req.user.classTeacher;
     const schoolId = req.user.school;
-    //console.log(classId, schoolId);
+    console.log(classId, schoolId);
     if (!name || !rollNumber || !password) {
       return res.status(400).json({ message: "Missing required fields" });
     }
@@ -65,7 +65,7 @@ export const createStudent = async (req, res) => {
       student: sanitizeStudent(student),
     });
   } catch (err) {
-    //console.log(err);
+    console.log(err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -249,3 +249,4 @@ export const deleteStudent = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
