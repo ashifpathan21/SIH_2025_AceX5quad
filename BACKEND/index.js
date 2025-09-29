@@ -21,10 +21,18 @@ const app = express();
 // ✅ CORS setup (open for all with credentials)
 app.use(
   cors({
-    origin: ["https://smartpravesh.onrender.com", "http://localhost:5173"  , "*"],
+    origin: (origin, callback) => {
+      // अगर request बिना origin के आए (जैसे Postman) तो भी allow कर दो
+      callback(null, origin || true);
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   })
 );
+
+// Handle preflight requests (OPTIONS)
+app.options("/*", cors());
 
 app.use(express.json());
 
