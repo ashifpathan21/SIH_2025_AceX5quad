@@ -68,6 +68,7 @@ export function getAllTeachers(token) {
       dispatch(setTeachers(res.data));
       return res.data;
     } catch (error) {
+       console.log(error);
       dispatch(
         setError(error.response?.data?.message || "Failed to fetch teachers")
       );

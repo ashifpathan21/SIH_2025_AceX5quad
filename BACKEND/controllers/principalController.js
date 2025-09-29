@@ -13,7 +13,7 @@ export const getPrincipalProfile = async (req, res) => {
   try {
     // token is attached in auth middleware, decoded user is in req.user
     const principalId = req.user.id;
-    //console.log("working" , principalId)
+    console.log("working" , principalId)
     const principal = await Principal.findById(principalId)
       .select("-password") // Exclude password
       .populate({

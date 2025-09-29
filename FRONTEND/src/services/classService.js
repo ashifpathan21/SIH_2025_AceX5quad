@@ -40,6 +40,7 @@ export function getAllClasses(token) {
       dispatch(setClasses(res.data || []));
       return res.data;
     } catch (error) {
+      console.log(error)
       dispatch(setError("Failed to fetch classes"));
       toast.error("Failed to fetch classes");
       return [];
