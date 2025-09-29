@@ -21,7 +21,7 @@ const app = express();
 // ✅ Middlewares
 app.use(
   cors({
-    origin: "*",
+    origin: ["https://smartpravesh.onrender.com", "http://localhost:5173" , "*"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     credentials: true,

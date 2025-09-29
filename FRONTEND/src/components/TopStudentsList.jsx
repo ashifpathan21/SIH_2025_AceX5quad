@@ -43,7 +43,7 @@ const TopStudentsList = ({ students }) => {
       </div>
 
       <div className="space-y-3">
-        {students.map((student, index) => (
+        {students?.map((student, index) => (
           <div
             key={index}
             className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
